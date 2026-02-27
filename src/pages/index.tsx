@@ -1,78 +1,124 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import Layout from "@/components/layout/Layout";
+import { useLanguage } from "@/context/LanguageContext";
+import { useRouter } from "next/router";
 
 export default function Home() {
+  const { t } = useLanguage();
+  const router = useRouter();
+
+  const handleRentClick = () => {
+    router.push("/machines");
+  };
+
   return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black`}
-    >
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the index.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <Layout>
+      <div className="bg-[#d99c4e]">
+        {/* HERO */}
+        <section
+          className="relative w-full min-h-[60vh] sm:min-h-[65vh] bg-cover bg-center"
+          style={{ backgroundImage: "url(/hero_2.jpg)" }}
+        >
+          <div className="absolute inset-0 bg-green-900/60"></div>
+
+          <div className="relative z-10 w-full px-4 sm:px-6 lg:px-16 pt-20 sm:pt-24 pb-12 sm:pb-16">
+            <div className="w-full max-w-none sm:max-w-xl text-white">
+              <span className="inline-block bg-green-200 text-green-900 px-4 py-1 rounded-full text-xs sm:text-sm mb-4">
+                {t("badge")}
+              </span>
+
+              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-tight">
+                {t("heroLine1")}{" "}
+                <span className="text-yellow-400">{t("heroLine2")}</span>
+              </h1>
+
+              <p className="mt-4 text-sm sm:text-base leading-relaxed">
+                {t("heroDesc")}
+              </p>
+
+              <div className="mt-6 flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={handleRentClick}
+                  className="bg-yellow-400 text-black px-6 py-3 rounded-lg font-medium"
+                >
+                  🚜 {t("rentBtn")}
+                </button>
+
+                <button
+                  onClick={handleRentClick}
+                  className="border border-white px-6 py-3 rounded-lg"
+                >
+                  🌱 {t("browseBtn")}
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* SERVICES */}
+        <section className="w-full px-4 sm:px-6 lg:px-16 py-16 bg-[#FBFAF7]">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">
+            {t("servicesTitle")}
+          </h2>
+
+          <p className="text-center text-gray-600 mb-10 text-sm sm:text-base">
+            {t("servicesSubtitle")}
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs/pages/getting-started?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            {/* Rent Machines */}
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <img
+                src="/machine-card.jpg"
+                alt="Rent Machines"
+                className="w-full h-52 sm:h-64 object-cover"
+              />
+
+              <div className="p-6">
+                <h3 className="text-xl font-semibold mb-2">
+                  🚜 {t("servicesRent")}
+                </h3>
+
+                <p className="text-gray-600 mb-4 text-sm sm:text-base">
+                  {t("servicesRentDesc")}
+                </p>
+
+                <button
+                  onClick={handleRentClick}
+                  className="text-green-700 font-medium"
+                >
+                  {t("learnMore")} →
+                </button>
+              </div>
+            </div>
+
+            {/* Marketplace */}
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <img
+                src="/market-card.jpg"
+                alt="Marketplace"
+                className="w-full h-52 sm:h-64 object-cover"
+              />
+
+              <div className="p-6">
+                <h3 className="text-xl font-semibold mb-2">
+                  🌱 {t("servicesMarket")}
+                </h3>
+
+                <p className="text-gray-600 mb-4 text-sm sm:text-base">
+                  {t("servicesMarketDesc")}
+                </p>
+
+                <button
+                  onClick={handleRentClick}
+                  className="text-green-700 font-medium"
+                >
+                  {t("learnMore")} →
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </Layout>
   );
 }
