@@ -1,19 +1,23 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
+import { useAuth, UserRole } from "@/context/AuthContext";
 
-export function useAuthGuard(requiredRole: "admin" | "farmer") {
-  const router = useRouter();
+export function useAuthGuard(requiredRole: UserRole) {
+    const { user, profile, loading } = useAuth();
+    const router = useRouter();
 
-  useEffect(() => {
-    const role = localStorage.getItem("role");
+    useEffect(() => {
+        if (loading) return;
 
-    if (!role) {
-      router.replace("/login");
-      return;
-    }
+        if (!user) {
+            router.replace("/login");
+            return;
+        }
 
-    if (role !== requiredRole) {
-      router.replace("/login");
-    }
-  }, [requiredRole, router]);
+        if (profile && profile.role !== requiredRole) {
+            router.replace("/unauthorized");
+        }
+    }, [user, profile, loading, requiredRole, router]);
+
+    return { user, profile, loading };
 }

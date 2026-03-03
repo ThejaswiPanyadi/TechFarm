@@ -1,194 +1,232 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { getAllBookings, updateBookingStatus, markCashPaid } from "@/lib/db";
 
-type Status = "Pending" | "Approved" | "Rejected";
+type AllStatus = "All" | "Pending Payment" | "Waiting Admin Approval" | "Confirmed" | "Cancelled" | "Pending" | "Approved" | "Rejected";
 
-interface Booking {
-  id: number;
-  machine: string;
-  farmer: string;
-  location: string;
-  from: string;
-  to: string;
-  amount: number;
-  status: Status;
-  created: string;
-}
+const STATUS_COLORS: Record<string, string> = {
+  "Pending Payment": "bg-amber-100 text-amber-700",
+  "Waiting Admin Approval": "bg-blue-100 text-blue-700",
+  Confirmed: "bg-green-100 text-green-700",
+  Cancelled: "bg-red-100 text-red-700",
+  // Legacy
+  Pending: "bg-yellow-100 text-yellow-700",
+  Approved: "bg-green-100 text-green-700",
+  Rejected: "bg-red-100 text-red-700",
+};
+
+const PAYMENT_COLORS: Record<string, string> = {
+  cash: "bg-orange-100 text-orange-700",
+  online: "bg-purple-100 text-purple-700",
+};
 
 export default function BookingRequests() {
-  const [filter, setFilter] = useState<Status | "All">("All");
+  useAuthGuard("admin");
 
-  const [bookings, setBookings] = useState<Booking[]>([
-    {
-      id: 1,
-      machine: "John Deere Tractor 5050D",
-      farmer: "Ramesh Kumar",
-      location: "Village Center",
-      from: "Jan 25, 2026",
-      to: "Jan 27, 2026",
-      amount: 4500,
-      status: "Pending",
-      created: "2 hours ago",
-    },
-    {
-      id: 2,
-      machine: "Rotavator (Tiller)",
-      farmer: "Suresh Patel",
-      location: "North District",
-      from: "Jan 26, 2026",
-      to: "Jan 28, 2026",
-      amount: 2400,
-      status: "Pending",
-      created: "5 hours ago",
-    },
-    {
-      id: 3,
-      machine: "Harvester Combine",
-      farmer: "Anjali Devi",
-      location: "South Block",
-      from: "Jan 20, 2026",
-      to: "Jan 22, 2026",
-      amount: 10500,
-      status: "Approved",
-      created: "2 days ago",
-    },
-    {
-      id: 4,
-      machine: "Seed Drill Machine",
-      farmer: "Prakash Singh",
-      location: "East Zone",
-      from: "Jan 18, 2026",
-      to: "Jan 19, 2026",
-      amount: 1200,
-      status: "Rejected",
-      created: "3 days ago",
-    },
-  ]);
+  const [filter, setFilter] = useState<AllStatus>("All");
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const pendingCount = bookings.filter(b => b.status === "Pending").length;
+  const loadAndAutoCancelExpired = useCallback(async () => {
+    try {
+      const data = await getAllBookings();
 
-  const updateStatus = (id: number, status: Status) => {
-    setBookings(bookings.map(b =>
-      b.id === id ? { ...b, status } : b
-    ));
-  };
+      // Auto-cancel cash bookings past their deadline
+      const now = new Date();
+      const toCancel = data?.filter(
+        (b: any) =>
+          b.status === "Pending Payment" &&
+          b.cash_deadline &&
+          new Date(b.cash_deadline) < now
+      ) ?? [];
 
-  const filteredBookings =
-    filter === "All"
-      ? bookings
-      : bookings.filter(b => b.status === filter);
+      // Fire-and-forget updates
+      await Promise.all(
+        toCancel.map((b: any) => updateBookingStatus(b.id, "Cancelled").catch(console.error))
+      );
+
+      // Apply cancellation locally
+      const updated = (data ?? []).map((b: any) =>
+        toCancel.find((c: any) => c.id === b.id) ? { ...b, status: "Cancelled" } : b
+      );
+
+      setBookings(updated);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAndAutoCancelExpired();
+  }, [loadAndAutoCancelExpired]);
+
+  async function handleAction(id: string, status: "Confirmed" | "Cancelled") {
+    setActionLoading(id + status);
+    await updateBookingStatus(id, status);
+    setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status } : b)));
+    setActionLoading(null);
+  }
+
+  async function handleCashPaid(id: string) {
+    setActionLoading(id + "cash");
+    await markCashPaid(id);
+    setBookings((prev) => prev.map((b) => (b.id === id ? { ...b, status: "Confirmed" } : b)));
+    setActionLoading(null);
+  }
+
+  const filterTabs: AllStatus[] = ["All", "Pending Payment", "Waiting Admin Approval", "Confirmed", "Cancelled"];
+  const pendingCount = bookings.filter(
+    (b) => b.status === "Pending Payment" || b.status === "Waiting Admin Approval" || b.status === "Pending"
+  ).length;
+
+  const filtered = filter === "All" ? bookings : bookings.filter((b) => b.status === filter);
 
   return (
     <AdminLayout>
-      <div>
-        <h1 className="text-2xl font-bold mb-1">Booking Requests</h1>
-        <p className="text-gray-600 mb-6">
-          Review and manage machine rental requests from farmers. 
-          <span className="text-yellow-600 font-medium"> ({pendingCount} pending)</span>
-        </p>
+      <h1 className="text-2xl font-bold mb-1">Booking Requests</h1>
+      <p className="text-gray-600 mb-6">
+        Review and manage machine rental requests from farmers.{" "}
+        {pendingCount > 0 && (
+          <span className="text-amber-600 font-medium">({pendingCount} need attention)</span>
+        )}
+      </p>
 
-        {/* FILTER TABS */}
-        <div className="flex gap-3 mb-6">
-          {["All", "Pending", "Approved", "Rejected"].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setFilter(tab as any)}
-              className={`px-5 py-2 rounded-full font-medium transition ${
-                filter === tab
-                  ? "bg-green-700 text-white"
-                  : "bg-gray-200 text-gray-700"
+      {/* Filter Tabs */}
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {filterTabs.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setFilter(tab)}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition ${filter === tab ? "bg-green-700 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
-            >
-              {tab}
-              {tab === "Pending" && pendingCount > 0 && (
-                <span className="ml-2 bg-yellow-500 text-white px-2 py-0.5 rounded-full text-xs">
-                  {pendingCount}
+          >
+            {tab}
+            {tab === "Pending Payment" &&
+              bookings.filter((b) => b.status === "Pending Payment").length > 0 && (
+                <span className="ml-1.5 bg-amber-500 text-white px-1.5 py-0.5 rounded-full text-xs">
+                  {bookings.filter((b) => b.status === "Pending Payment").length}
                 </span>
               )}
-            </button>
-          ))}
-        </div>
+            {tab === "Waiting Admin Approval" &&
+              bookings.filter((b) => b.status === "Waiting Admin Approval").length > 0 && (
+                <span className="ml-1.5 bg-blue-500 text-white px-1.5 py-0.5 rounded-full text-xs">
+                  {bookings.filter((b) => b.status === "Waiting Admin Approval").length}
+                </span>
+              )}
+          </button>
+        ))}
+      </div>
 
-        {/* BOOKING LIST */}
-        <div className="space-y-5">
-          {filteredBookings.map(booking => (
-            <div
-              key={booking.id}
-              className="bg-white rounded-xl p-6 shadow flex flex-col lg:flex-row justify-between gap-4"
-            >
-              {/* LEFT INFO */}
-              <div>
-                <div className="flex items-center gap-3">
-                  <h2 className="font-semibold text-lg">
-                    {booking.machine}
-                  </h2>
+      {loading ? (
+        <div className="text-center py-20 text-gray-400">Loading bookings...</div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-20 text-gray-400">No bookings found.</div>
+      ) : (
+        <div className="space-y-4">
+          {filtered.map((booking) => {
+            const isLoadingAction = actionLoading?.startsWith(booking.id);
+            const cashDeadline = booking.cash_deadline ? new Date(booking.cash_deadline) : null;
 
-                  <span
-                    className={`px-3 py-1 text-xs rounded-full ${
-                      booking.status === "Pending"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : booking.status === "Approved"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {booking.status}
-                  </span>
+            return (
+              <div
+                key={booking.id}
+                className="bg-white rounded-xl p-5 shadow-sm border flex flex-col lg:flex-row justify-between gap-4"
+              >
+                {/* Left: Info */}
+                <div className="flex-1 space-y-1.5">
+                  {/* Title row */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="font-semibold text-lg">{booking.machines?.name ?? "Machine"}</h2>
+                    <span className={`px-2.5 py-0.5 text-xs rounded-full font-medium ${STATUS_COLORS[booking.status] ?? "bg-gray-100 text-gray-600"}`}>
+                      {booking.status}
+                    </span>
+                    {booking.payment_method && (
+                      <span className={`px-2.5 py-0.5 text-xs rounded-full font-medium ${PAYMENT_COLORS[booking.payment_method] ?? "bg-gray-100 text-gray-600"}`}>
+                        {booking.payment_method === "cash" ? "🏪 Cash" : "📱 Online"}
+                      </span>
+                    )}
+                    <span className="text-gray-400 text-xs">{new Date(booking.created_at).toLocaleDateString()}</span>
+                  </div>
 
-                  <span className="text-gray-400 text-sm">
-                    {booking.created}
-                  </span>
+                  {/* Customer details */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1 text-sm text-gray-600 mt-2">
+                    <p>👤 {booking.customer_name || booking.profiles?.full_name || "—"}</p>
+                    <p>📞 {booking.customer_phone || "—"}</p>
+                    <p>📍 {booking.customer_location || booking.machines?.location || "—"}</p>
+                    <p>📅 {booking.from_date} → {booking.to_date}</p>
+                    {booking.total_amount && (
+                      <p className="font-semibold text-green-700">₹ {booking.total_amount}</p>
+                    )}
+                    {booking.notes && (
+                      <p className="text-gray-500 col-span-2 italic">📝 {booking.notes}</p>
+                    )}
+                  </div>
+
+                  {/* Cash deadline warning */}
+                  {booking.status === "Pending Payment" && cashDeadline && (
+                    <div className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      ⏱ Cash payment due by: <span className="font-semibold">{cashDeadline.toLocaleString()}</span>
+                    </div>
+                  )}
                 </div>
 
-                <p className="text-gray-600 mt-2">
-                  👤 {booking.farmer}
-                </p>
+                {/* Right: Actions */}
+                <div className="flex items-start lg:items-center gap-2 flex-wrap lg:flex-col lg:min-w-[160px]">
+                  {(booking.status === "Pending Payment") && (
+                    <>
+                      <button
+                        disabled={isLoadingAction}
+                        onClick={() => handleCashPaid(booking.id)}
+                        className="flex-1 lg:w-full bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 disabled:opacity-50 transition"
+                      >
+                        ✓ Mark Cash Paid
+                      </button>
+                      <button
+                        disabled={isLoadingAction}
+                        onClick={() => handleAction(booking.id, "Cancelled")}
+                        className="flex-1 lg:w-full bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 disabled:opacity-50 transition"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
 
-                <p className="text-gray-600">
-                  📍 {booking.location}
-                </p>
+                  {(booking.status === "Waiting Admin Approval" || booking.status === "Pending") && (
+                    <>
+                      <button
+                        disabled={isLoadingAction}
+                        onClick={() => handleAction(booking.id, "Confirmed")}
+                        className="flex-1 lg:w-full bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 disabled:opacity-50 transition"
+                      >
+                        ✓ Approve
+                      </button>
+                      <button
+                        disabled={isLoadingAction}
+                        onClick={() => handleAction(booking.id, "Cancelled")}
+                        className="flex-1 lg:w-full bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 disabled:opacity-50 transition"
+                      >
+                        ✗ Reject
+                      </button>
+                    </>
+                  )}
 
-                <p className="text-gray-600">
-                  📅 {booking.from} - {booking.to}
-                </p>
+                  {(booking.status === "Confirmed" || booking.status === "Approved") && (
+                    <span className="text-green-600 text-sm font-medium">✓ Confirmed</span>
+                  )}
 
-                <p className="text-green-700 font-semibold mt-2">
-                  ₹ {booking.amount}
-                </p>
+                  {(booking.status === "Cancelled" || booking.status === "Rejected") && (
+                    <span className="text-red-500 text-sm font-medium">✗ Cancelled</span>
+                  )}
+                </div>
               </div>
-
-              {/* ACTIONS */}
-              <div className="flex items-center gap-3">
-                <button className="border px-4 py-2 rounded-lg">
-                  Details
-                </button>
-
-                {booking.status === "Pending" && (
-                  <>
-                    <button
-                      onClick={() =>
-                        updateStatus(booking.id, "Approved")
-                      }
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg"
-                    >
-                      Approve
-                    </button>
-
-                    <button
-                      onClick={() =>
-                        updateStatus(booking.id, "Rejected")
-                      }
-                      className="bg-red-600 text-white px-4 py-2 rounded-lg"
-                    >
-                      Reject
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
-      </div>
+      )}
     </AdminLayout>
   );
 }

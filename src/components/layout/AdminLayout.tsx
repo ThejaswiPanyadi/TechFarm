@@ -1,8 +1,7 @@
-"use client";
-
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { useAuth } from "@/context/AuthContext";
 import {
   Leaf,
   LayoutDashboard,
@@ -23,6 +22,7 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
+  const { profile, signOut } = useAuth();
 
   const navItems = [
     { name: "Dashboard", path: "/admin", icon: LayoutDashboard },
@@ -33,10 +33,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   ];
 
   const isActive = (path: string) => router.pathname === path;
-
-  const handleLogout = () => {
-    router.push("/");
-  };
 
   return (
     <div className="min-h-screen flex bg-[#F5F4F1]">
@@ -80,7 +76,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <Shield className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-semibold">Saya Enterprises</p>
+                <p className="font-semibold">{profile?.full_name ?? "Admin"}</p>
                 <p className="text-sm text-white/70">Admin</p>
               </div>
             </div>
@@ -94,10 +90,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 href={item.path}
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all
-                  ${
-                    isActive(item.path)
-                      ? "bg-yellow-500 text-black font-semibold"
-                      : "hover:bg-green-700 text-white/90"
+                  ${isActive(item.path)
+                    ? "bg-yellow-500 text-black font-semibold"
+                    : "hover:bg-green-700 text-white/90"
                   }`}
               >
                 <item.icon className="w-5 h-5" />
@@ -109,7 +104,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           {/* Logout */}
           <div className="p-4 border-t border-white/20">
             <button
-              onClick={handleLogout}
+              onClick={signOut}
               className="flex items-center gap-3 px-4 py-3 w-full rounded-xl hover:bg-green-700 transition"
             >
               <LogOut className="w-5 h-5" />

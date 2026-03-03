@@ -1,157 +1,100 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
-interface Booking {
-  id: string;
-  machine: string;
-  start: Date;
-  end: Date;
-}
+import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { getAllBookings } from "@/lib/db";
 
 export default function CalendarPage() {
-  const today = new Date();
+  useAuthGuard("admin");
 
+  const today = new Date();
   const [currentDate, setCurrentDate] = useState(
     new Date(today.getFullYear(), today.getMonth(), 1)
   );
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // 🔥 Dummy bookings (later connect to DB)
-  const bookings: Booking[] = [
-    {
-      id: "1",
-      machine: "Tractor 5050D",
-      start: new Date(2026, 0, 20),
-      end: new Date(2026, 0, 22),
-    },
-    {
-      id: "2",
-      machine: "Rotavator",
-      start: new Date(2026, 0, 25),
-      end: new Date(2026, 0, 28),
-    },
-  ];
+  useEffect(() => {
+    getAllBookings()
+      .then((data) => setBookings(data.filter((b: any) => b.status === "Approved")))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const totalDays = new Date(year, month + 1, 0).getDate();
 
-  const firstDayOfMonth = new Date(year, month, 1);
-  const lastDayOfMonth = new Date(year, month + 1, 0);
+  const daysArray: (Date | null)[] = [];
+  for (let i = 0; i < firstDay; i++) daysArray.push(null);
+  for (let d = 1; d <= totalDays; d++) daysArray.push(new Date(year, month, d));
 
-  const startDay = firstDayOfMonth.getDay();
-  const totalDays = lastDayOfMonth.getDate();
-
-  const prevMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1));
-  };
-
-  const nextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1));
-  };
-
-  const daysArray = [];
-
-  // Empty cells before month starts
-  for (let i = 0; i < startDay; i++) {
-    daysArray.push(null);
+  function getBookingForDate(date: Date) {
+    return bookings.find((b) => {
+      const from = new Date(b.from_date);
+      const to = new Date(b.to_date);
+      return date >= from && date <= to;
+    });
   }
-
-  // Fill days
-  for (let day = 1; day <= totalDays; day++) {
-    daysArray.push(new Date(year, month, day));
-  }
-
-  const isBooked = (date: Date) => {
-    return bookings.find(
-      (booking) =>
-        date >= booking.start && date <= booking.end
-    );
-  };
 
   return (
     <AdminLayout>
       <div className="p-6">
-        <h2 className="text-2xl font-bold mb-2">
-          Availability Calendar
-        </h2>
-        <p className="text-gray-600 mb-6">
-          View machine booking schedules at a glance.
-        </p>
+        <h2 className="text-2xl font-bold mb-2">Availability Calendar</h2>
+        <p className="text-gray-600 mb-6">View approved machine booking schedules.</p>
 
         {/* Calendar Header */}
         <div className="flex items-center justify-between bg-white p-4 rounded-xl shadow mb-4">
-          <button
-            onClick={prevMonth}
-            className="p-2 rounded-lg border hover:bg-gray-100"
-          >
+          <button onClick={() => setCurrentDate(new Date(year, month - 1, 1))}
+            className="p-2 rounded-lg border hover:bg-gray-100">
             <ChevronLeft />
           </button>
-
           <h3 className="text-lg font-semibold">
-            {currentDate.toLocaleString("default", {
-              month: "long",
-              year: "numeric",
-            })}
+            {currentDate.toLocaleString("default", { month: "long", year: "numeric" })}
           </h3>
-
-          <button
-            onClick={nextMonth}
-            className="p-2 rounded-lg border hover:bg-gray-100"
-          >
+          <button onClick={() => setCurrentDate(new Date(year, month + 1, 1))}
+            className="p-2 rounded-lg border hover:bg-gray-100">
             <ChevronRight />
           </button>
         </div>
 
-        {/* Days of Week */}
+        {/* Day Labels */}
         <div className="grid grid-cols-7 text-center font-medium text-gray-600 mb-2">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
-            (day) => (
-              <div key={day}>{day}</div>
-            )
-          )}
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
+            <div key={d}>{d}</div>
+          ))}
         </div>
 
         {/* Calendar Grid */}
-        <div className="grid grid-cols-7 gap-2 bg-white p-4 rounded-xl shadow">
-          {daysArray.map((date, index) => {
-            if (!date) {
-              return <div key={index}></div>;
-            }
+        {loading ? (
+          <div className="text-center py-16 text-gray-400">Loading calendar...</div>
+        ) : (
+          <div className="grid grid-cols-7 gap-2 bg-white p-4 rounded-xl shadow">
+            {daysArray.map((date, i) => {
+              if (!date) return <div key={i} />;
+              const booking = getBookingForDate(date);
+              return (
+                <div key={i} className={`h-24 border rounded-lg p-2 text-sm relative ${booking ? "bg-green-100 border-green-500" : "bg-gray-50"
+                  }`}>
+                  <span className="absolute top-2 left-2 font-medium">{date.getDate()}</span>
+                  {booking && (
+                    <div className="absolute bottom-2 left-2 right-2 text-xs bg-green-700 text-white px-2 py-1 rounded truncate">
+                      {booking.machines?.name ?? "Booking"}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-            const booking = isBooked(date);
-
-            return (
-              <div
-                key={index}
-                className={`h-24 border rounded-lg p-2 text-sm relative ${
-                  booking
-                    ? "bg-green-100 border-green-500"
-                    : "bg-gray-50"
-                }`}
-              >
-                <span className="absolute top-2 left-2 font-medium">
-                  {date.getDate()}
-                </span>
-
-                {booking && (
-                  <div className="absolute bottom-2 left-2 right-2 text-xs bg-green-700 text-white px-2 py-1 rounded">
-                    {booking.machine}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Legend */}
         <div className="flex gap-6 mt-6 text-sm">
           <div className="flex items-center gap-2">
-            <span className="w-4 h-4 bg-green-500 rounded"></span>
-            Booked
+            <span className="w-4 h-4 bg-green-500 rounded" />Booked
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-4 h-4 bg-gray-200 rounded"></span>
-            Available
+            <span className="w-4 h-4 bg-gray-200 rounded" />Available
           </div>
         </div>
       </div>
