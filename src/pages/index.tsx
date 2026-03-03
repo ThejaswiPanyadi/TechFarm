@@ -1,11 +1,15 @@
 import Layout from "@/components/layout/Layout";
 import { useLanguage } from "@/context/LanguageContext";
 import { useRouter } from "next/router";
-import Layout from "@/components/layout/Layout";
-import { useLanguage } from "@/context/LanguageContext";
-import { useRouter } from "next/router";
 
 export default function Home() {
+  const { t } = useLanguage();
+  const router = useRouter();
+
+  const handleRentClick = () => {
+    router.push("/machines");
+  };
+
   return (
     <Layout>
       <div className="bg-[#d99c4e]">
