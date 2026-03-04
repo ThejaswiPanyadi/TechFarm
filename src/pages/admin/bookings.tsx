@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { useLanguage } from "@/context/LanguageContext";
 import { getAllBookings, updateBookingStatus, markCashPaid } from "@/lib/db";
 
 type AllStatus = "All" | "Pending Payment" | "Waiting Admin Approval" | "Confirmed" | "Cancelled" | "Pending" | "Approved" | "Rejected";
@@ -23,6 +24,7 @@ const PAYMENT_COLORS: Record<string, string> = {
 
 export default function BookingRequests() {
   useAuthGuard("admin");
+  const { t } = useLanguage();
 
   const [filter, setFilter] = useState<AllStatus>("All");
   const [bookings, setBookings] = useState<any[]>([]);
@@ -85,13 +87,21 @@ export default function BookingRequests() {
 
   const filtered = filter === "All" ? bookings : bookings.filter((b) => b.status === filter);
 
+  const getStatusLabel = (status: string) => {
+    if (status === "Pending Payment") return t("pendingPayment");
+    if (status === "Waiting Admin Approval") return t("waitingAdminApproval");
+    if (status === "Confirmed") return t("confirmed");
+    if (status === "Cancelled") return t("cancelled");
+    return t(status.toLowerCase()) || status;
+  };
+
   return (
     <AdminLayout>
-      <h1 className="text-2xl font-bold mb-1">Booking Requests</h1>
+      <h1 className="text-2xl font-bold mb-1">{t("bookingRequests")}</h1>
       <p className="text-gray-600 mb-6">
-        Review and manage machine rental requests from farmers.{" "}
+        {t("bookingRequestsDesc")}{" "}
         {pendingCount > 0 && (
-          <span className="text-amber-600 font-medium">({pendingCount} need attention)</span>
+          <span className="text-amber-600 font-medium">({pendingCount} {t("needAttention")})</span>
         )}
       </p>
 
@@ -104,7 +114,7 @@ export default function BookingRequests() {
             className={`px-4 py-1.5 rounded-full text-sm font-medium transition ${filter === tab ? "bg-green-700 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
           >
-            {tab}
+            {tab === "All" ? t("all") : getStatusLabel(tab)}
             {tab === "Pending Payment" &&
               bookings.filter((b) => b.status === "Pending Payment").length > 0 && (
                 <span className="ml-1.5 bg-amber-500 text-white px-1.5 py-0.5 rounded-full text-xs">
@@ -122,9 +132,9 @@ export default function BookingRequests() {
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-gray-400">Loading bookings...</div>
+        <div className="text-center py-20 text-gray-400">{t("loadingDash")}</div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">No bookings found.</div>
+        <div className="text-center py-20 text-gray-400">{t("noBookings")}</div>
       ) : (
         <div className="space-y-4">
           {filtered.map((booking) => {
@@ -140,16 +150,16 @@ export default function BookingRequests() {
                 <div className="flex-1 space-y-1.5">
                   {/* Title row */}
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h2 className="font-semibold text-lg">{booking.machines?.name ?? "Machine"}</h2>
+                    <h2 className="font-semibold text-lg">{booking.machines?.name ?? t("machine")}</h2>
                     <span className={`px-2.5 py-0.5 text-xs rounded-full font-medium ${STATUS_COLORS[booking.status] ?? "bg-gray-100 text-gray-600"}`}>
-                      {booking.status}
+                      {getStatusLabel(booking.status)}
                     </span>
                     {booking.payment_method && (
                       <span className={`px-2.5 py-0.5 text-xs rounded-full font-medium ${PAYMENT_COLORS[booking.payment_method] ?? "bg-gray-100 text-gray-600"}`}>
-                        {booking.payment_method === "cash" ? "🏪 Cash" : "📱 Online"}
+                        {booking.payment_method === "cash" ? "🏪 " + t("cash") : "📱 " + t("online")}
                       </span>
                     )}
-                    <span className="text-gray-400 text-xs">{new Date(booking.created_at).toLocaleDateString()}</span>
+                    <span className="text-gray-400 text-xs">{new Date(booking.created_at).toLocaleString()}</span>
                   </div>
 
                   {/* Customer details */}
@@ -169,7 +179,7 @@ export default function BookingRequests() {
                   {/* Cash deadline warning */}
                   {booking.status === "Pending Payment" && cashDeadline && (
                     <div className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                      ⏱ Cash payment due by: <span className="font-semibold">{cashDeadline.toLocaleString()}</span>
+                      ⏱ {t("cashPayDue")}: <span className="font-semibold">{cashDeadline.toLocaleString()}</span>
                     </div>
                   )}
                 </div>
@@ -183,14 +193,14 @@ export default function BookingRequests() {
                         onClick={() => handleCashPaid(booking.id)}
                         className="flex-1 lg:w-full bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 disabled:opacity-50 transition"
                       >
-                        ✓ Mark Cash Paid
+                        ✓ {t("markCashPaid")}
                       </button>
                       <button
                         disabled={isLoadingAction}
                         onClick={() => handleAction(booking.id, "Cancelled")}
                         className="flex-1 lg:w-full bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 disabled:opacity-50 transition"
                       >
-                        Cancel
+                        {t("cancel")}
                       </button>
                     </>
                   )}
@@ -202,24 +212,24 @@ export default function BookingRequests() {
                         onClick={() => handleAction(booking.id, "Confirmed")}
                         className="flex-1 lg:w-full bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 disabled:opacity-50 transition"
                       >
-                        ✓ Approve
+                        ✓ {t("approve")}
                       </button>
                       <button
                         disabled={isLoadingAction}
                         onClick={() => handleAction(booking.id, "Cancelled")}
                         className="flex-1 lg:w-full bg-red-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-600 disabled:opacity-50 transition"
                       >
-                        ✗ Reject
+                        ✗ {t("reject")}
                       </button>
                     </>
                   )}
 
                   {(booking.status === "Confirmed" || booking.status === "Approved") && (
-                    <span className="text-green-600 text-sm font-medium">✓ Confirmed</span>
+                    <span className="text-green-600 text-sm font-medium">✓ {t("confirmed")}</span>
                   )}
 
                   {(booking.status === "Cancelled" || booking.status === "Rejected") && (
-                    <span className="text-red-500 text-sm font-medium">✗ Cancelled</span>
+                    <span className="text-red-500 text-sm font-medium">✗ {t("cancelled")}</span>
                   )}
                 </div>
               </div>

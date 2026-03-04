@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { Tractor, Clock, CheckCircle, TrendingUp, ClipboardList, Calendar } from "lucide-react";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { useLanguage } from "@/context/LanguageContext";
 import { getAdminStats, getAllBookings, updateBookingStatus } from "@/lib/db";
 import Link from "next/link";
 
 export default function AdminDashboard() {
   useAuthGuard("admin");
+  const { t } = useLanguage();
 
   const [stats, setStats] = useState({ totalMachines: 0, pending: 0, approved: 0, active: 0 });
   const [recentBookings, setRecentBookings] = useState<any[]>([]);
@@ -43,47 +45,48 @@ export default function AdminDashboard() {
     <AdminLayout>
       {/* Welcome Section */}
       <div className="mb-8">
-        <h2 className="text-3xl font-bold mb-2">Welcome, Admin! 👋</h2>
-        <p className="text-gray-600">Manage your machine rentals and monitor booking requests.</p>
+        <h2 className="text-3xl font-bold mb-2">{t("welcomeAdmin")}</h2>
+        <p className="text-gray-600">{t("adminDashDesc")}</p>
       </div>
 
       {loading ? (
-        <div className="text-gray-400 text-center py-20">Loading dashboard...</div>
+        <div className="text-gray-400 text-center py-20">{t("loadingDash")}</div>
       ) : (
         <>
           {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <StatCard icon={<Tractor />} value={String(stats.totalMachines)} label="Total Machines" bg="bg-green-100" />
-            <StatCard icon={<Clock />} value={String(stats.pending)} label="Pending Requests" bg="bg-yellow-100" />
-            <StatCard icon={<CheckCircle />} value={String(stats.approved)} label="Approved Bookings" bg="bg-green-100" />
-            <StatCard icon={<TrendingUp />} value={String(stats.active)} label="Available Machines" bg="bg-yellow-100" />
+            <StatCard icon={<Tractor />} value={String(stats.totalMachines)} label={t("totalMachines")} bg="bg-green-100" />
+            <StatCard icon={<Clock />} value={String(stats.pending)} label={t("pendingRequests")} bg="bg-yellow-100" />
+            <StatCard icon={<CheckCircle />} value={String(stats.approved)} label={t("approvedBookings")} bg="bg-green-100" />
+            <StatCard icon={<TrendingUp />} value={String(stats.active)} label={t("availableMachines")} bg="bg-yellow-100" />
           </div>
 
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Link href="/admin/machines">
-              <ActionCard icon={<Tractor />} title="Manage Machines" desc="Add, edit, or remove rental machines" />
+              <ActionCard icon={<Tractor />} title={t("manageMachines")} desc={t("manageMachinesDesc")} />
             </Link>
             <Link href="/admin/bookings">
-              <ActionCard icon={<ClipboardList />} title="Booking Requests" desc="Review and manage farmer bookings" />
+              <ActionCard icon={<ClipboardList />} title={t("bookingRequests")} desc={t("bookingRequestsDesc")} />
             </Link>
             <Link href="/admin/calendar">
-              <ActionCard icon={<Calendar />} title="Availability Calendar" desc="View machine schedules" />
+              <ActionCard icon={<Calendar />} title={t("availabilityCalendar")} desc={t("availabilityCalendarDesc")} />
             </Link>
           </div>
 
           {/* Recent Bookings */}
           <div className="bg-white rounded-2xl shadow-sm border p-6">
-            <h3 className="text-xl font-semibold mb-6">Recent Booking Requests</h3>
+            <h3 className="text-xl font-semibold mb-6">{t("recentBookingReq")}</h3>
             {recentBookings.length === 0 ? (
-              <p className="text-gray-400 text-center py-8">No bookings yet.</p>
+              <p className="text-gray-400 text-center py-8">{t("noBookings")}</p>
             ) : (
               recentBookings.map((b) => (
                 <BookingRow
                   key={b.id}
-                  name={b.profiles?.full_name ?? "Farmer"}
+                  name={b.profiles?.full_name ?? t("farmer")}
                   machine={b.machines?.name ?? "—"}
                   status={b.status}
+                  t={t}
                   onApprove={b.status === "Pending" ? () => handleStatus(b.id, "Approved") : undefined}
                   onReject={b.status === "Pending" ? () => handleStatus(b.id, "Rejected") : undefined}
                 />
@@ -118,7 +121,7 @@ function ActionCard({ icon, title, desc }: any) {
   );
 }
 
-function BookingRow({ name, machine, status, onApprove, onReject }: any) {
+function BookingRow({ name, machine, status, t, onApprove, onReject }: any) {
   const statusColor =
     status === "Pending"
       ? "bg-yellow-100 text-yellow-700"
@@ -133,15 +136,15 @@ function BookingRow({ name, machine, status, onApprove, onReject }: any) {
         <p className="text-sm text-gray-500">{machine}</p>
       </div>
       <div className="flex items-center gap-2">
-        <span className={`px-3 py-1 text-xs rounded-full ${statusColor}`}>{status}</span>
+        <span className={`px-3 py-1 text-xs rounded-full ${statusColor}`}>{t(status.toLowerCase()) || status}</span>
         {onApprove && (
           <button onClick={onApprove} className="text-xs bg-green-600 text-white px-3 py-1 rounded-full hover:bg-green-700">
-            Approve
+            {t("approve")}
           </button>
         )}
         {onReject && (
           <button onClick={onReject} className="text-xs bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600">
-            Reject
+            {t("reject")}
           </button>
         )}
       </div>

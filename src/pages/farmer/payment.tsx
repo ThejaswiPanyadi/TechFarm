@@ -37,8 +37,8 @@ export default function PaymentPage() {
           <div
             onClick={() => setMethod("cash")}
             className={`p-4 border rounded-xl cursor-pointer ${method === "cash"
-                ? "border-green-600 bg-green-50"
-                : "border-gray-300"
+              ? "border-green-600 bg-green-50"
+              : "border-gray-300"
               }`}
           >
             💵 Cash on Shop
@@ -47,8 +47,8 @@ export default function PaymentPage() {
           <div
             onClick={() => setMethod("online")}
             className={`p-4 border rounded-xl cursor-pointer ${method === "online"
-                ? "border-green-600 bg-green-50"
-                : "border-gray-300"
+              ? "border-green-600 bg-green-50"
+              : "border-gray-300"
               }`}
           >
             💳 Online Payment (Scan QR)
@@ -62,7 +62,7 @@ export default function PaymentPage() {
 
             <div className="flex justify-center">
               <Image
-                src="/admin-qr.png"   // Put your QR image inside public folder
+                src="/myqr-code.jpg"   // Put your QR image inside public folder
                 alt="Admin QR Code"
                 width={200}
                 height={200}

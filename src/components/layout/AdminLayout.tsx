@@ -2,6 +2,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   Leaf,
   LayoutDashboard,
@@ -20,16 +21,17 @@ interface AdminLayoutProps {
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
+  const { t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
   const { profile, signOut } = useAuth();
 
   const navItems = [
-    { name: "Dashboard", path: "/admin", icon: LayoutDashboard },
-    { name: "Manage Machines", path: "/admin/machines", icon: Tractor },
-    { name: "Booking Requests", path: "/admin/bookings", icon: ClipboardList },
-    { name: "Availability Calendar", path: "/admin/calendar", icon: Calendar },
-    { name: "Marketplace Admin", path: "/admin/marketplace", icon: Settings },
+    { name: t("dashboard"), path: "/admin", icon: LayoutDashboard },
+    { name: t("manageMachines"), path: "/admin/machines", icon: Tractor },
+    { name: t("bookingRequests"), path: "/admin/bookings", icon: ClipboardList },
+    { name: t("availabilityCalendar"), path: "/admin/calendar", icon: Calendar },
+    { name: t("marketplaceAdmin"), path: "/admin/marketplace", icon: Settings },
   ];
 
   const isActive = (path: string) => router.pathname === path;
@@ -76,8 +78,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <Shield className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-semibold">{profile?.full_name ?? "Admin"}</p>
-                <p className="text-sm text-white/70">Admin</p>
+                <p className="font-semibold">{profile?.full_name ?? t("admin")}</p>
+                <p className="text-sm text-white/70">{t("admin")}</p>
               </div>
             </div>
           </div>
@@ -108,7 +110,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               className="flex items-center gap-3 px-4 py-3 w-full rounded-xl hover:bg-green-700 transition"
             >
               <LogOut className="w-5 h-5" />
-              Logout
+              {t("logout")}
             </button>
           </div>
 
@@ -129,7 +131,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </button>
 
           <h1 className="text-xl font-bold">
-            Admin Panel – Saya Enterprises
+            {t("adminPanel")}
           </h1>
 
         </header>

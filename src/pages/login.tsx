@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function LoginPage() {
+  const { t } = useLanguage();
   const router = useRouter();
-  const [role, setRole] = useState<"farmer" | "admin">("farmer");
+  const [role, setRole] = useState<"farmer" | "admin" | string>("farmer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -70,6 +72,14 @@ export default function LoginPage() {
       profile = newProfile;
     }
 
+    // Enforce role matching
+    if (profile.role !== role) {
+      await supabase.auth.signOut();
+      setError(`Login failed: Your account is registered as a ${profile.role}, not an ${role}.`);
+      setLoading(false);
+      return;
+    }
+
     if (profile.role === "admin") {
       router.push("/admin");
     } else {
@@ -87,12 +97,12 @@ export default function LoginPage() {
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold text-center mb-1">Welcome Back</h1>
+        <h1 className="text-2xl font-bold text-center mb-1">{t("welcomeBack")}</h1>
         <p className="text-center text-gray-500 mb-6">
-          Login to your TechFarm account
+          {t("loginSubtitle")}
         </p>
 
-        {/* Role Toggle (visual only – actual role comes from DB) */}
+        {/* Role Toggle (actual role will be checked against DB) */}
         <div className="flex bg-gray-100 rounded-xl p-1 mb-6">
           <button
             type="button"
@@ -102,7 +112,7 @@ export default function LoginPage() {
               : "text-gray-500"
               }`}
           >
-            👤 Farmer
+            👤 {t("farmer")}
           </button>
           <button
             type="button"
@@ -112,7 +122,7 @@ export default function LoginPage() {
               : "text-gray-500"
               }`}
           >
-            🛡️ Admin
+            🛡️ {t("admin")}
           </button>
         </div>
 
@@ -133,7 +143,7 @@ export default function LoginPage() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-sm font-medium">Email</label>
+            <label className="text-sm font-medium">{t("email")}</label>
             <input
               type="email"
               placeholder="your@email.com"
@@ -144,7 +154,7 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label className="text-sm font-medium">Password</label>
+            <label className="text-sm font-medium">{t("password")}</label>
             <input
               type="password"
               placeholder="••••••••"
@@ -159,17 +169,19 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-green-700 text-white py-3 rounded-lg font-semibold hover:bg-green-800 transition disabled:opacity-60"
           >
-            {loading ? "Signing in..." : `Login as ${role}`}
+            {loading ? "Signing in..." : `${t("signIn")} as ${t(role)}`}
           </button>
         </form>
 
-        {/* Sign Up Link */}
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-green-700 font-medium hover:underline">
-            Sign Up
-          </Link>
-        </p>
+        {/* Sign Up Link - Hidden for admins */}
+        {role !== "admin" && (
+          <p className="text-center text-sm text-gray-500 mt-6">
+            {t("dontHaveAccount")}{" "}
+            <Link href="/register" className="text-green-700 font-medium hover:underline">
+              {t("signUp")}
+            </Link>
+          </p>
+        )}
       </div>
     </div>
   );

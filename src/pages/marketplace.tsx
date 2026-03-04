@@ -23,7 +23,7 @@ export default function Marketplace() {
       const data = await getAllListings(searchTerm, locationFilter);
       setListings(data);
     } catch (e) {
-      console.error(e);
+      // Removed console.error(e);
     } finally {
       setLoading(false);
     }
@@ -64,11 +64,16 @@ export default function Marketplace() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {listings.map((item) => (
               <div key={item.id} className="border rounded-xl p-4 bg-white shadow-sm hover:shadow-md transition">
-                {item.image_url ? (
-                  <img src={item.image_url} alt={item.name}
-                    className="w-full h-40 object-cover rounded-lg mb-4" />
+                {(item.images?.[0] || item.image_url) ? (
+                  <div className="w-full aspect-square sm:aspect-video bg-gray-50 rounded-lg mb-4 overflow-hidden flex items-center justify-center">
+                    <img
+                      src={item.images?.[0] ?? item.image_url}
+                      alt={item.name}
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
                 ) : (
-                  <div className="h-40 bg-gray-100 rounded-lg mb-4 flex items-center justify-center text-gray-400">
+                  <div className="w-full aspect-square sm:aspect-video bg-gray-50 rounded-lg mb-4 flex items-center justify-center text-gray-400">
                     🌾 No Image
                   </div>
                 )}

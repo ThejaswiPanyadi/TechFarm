@@ -35,25 +35,31 @@ export async function deleteMachine(id: string) {
     if (error) throw error;
 }
 
+// Helper: call bookings API with the current session token
+async function bookingsApi(method: string, body?: object) {
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch("/api/bookings", {
+        method,
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.access_token ?? ""}`,
+        },
+        body: body ? JSON.stringify(body) : undefined,
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error ?? "Booking request failed");
+    return json;
+}
+
 // ─── BOOKINGS ─────────────────────────────────────────────
 
 export async function getAllBookings() {
-    const { data, error } = await supabase
-        .from("bookings")
-        .select("*, machines(name, location), profiles(full_name)")
-        .order("created_at", { ascending: false });
-    if (error) throw error;
-    return data;
+    return bookingsApi("GET");
 }
 
 export async function getFarmerBookings(farmerId: string) {
-    const { data, error } = await supabase
-        .from("bookings")
-        .select("*, machines(name, location, price_per_day)")
-        .eq("farmer_id", farmerId)
-        .order("created_at", { ascending: false });
-    if (error) throw error;
-    return data;
+    // Note: API already filters by farmer_id if not admin
+    return bookingsApi("GET");
 }
 
 export async function getProfile(userId: string) {
@@ -66,37 +72,15 @@ export async function getProfile(userId: string) {
     return data as { full_name: string | null; phone: string | null; location: string | null };
 }
 
-export async function createBooking(booking: {
-    machine_id: string;
-    farmer_id: string;
-    from_date: string;
-    to_date: string;
-    total_amount: number;
-    payment_method: string;
-    status: string;
-    customer_name?: string;
-    customer_phone?: string;
-    customer_location?: string;
-    notes?: string;
-    cash_deadline?: string | null;
-}) {
-    const { data, error } = await supabase.from("bookings").insert(booking).select().single();
-    if (error) throw error;
-    return data;
+export async function createBooking(booking: any) {
+    return bookingsApi("POST", booking);
 }
 
 export async function updateBookingStatus(
     id: string,
     status: "Approved" | "Rejected" | "Confirmed" | "Cancelled" | "Pending Payment" | "Waiting Admin Approval"
 ) {
-    const { data, error } = await supabase
-        .from("bookings")
-        .update({ status })
-        .eq("id", id)
-        .select()
-        .single();
-    if (error) throw error;
-    return data;
+    return bookingsApi("PATCH", { id, status });
 }
 
 export async function markCashPaid(id: string) {
@@ -138,8 +122,20 @@ export async function addListing(listing: {
     quantity: string;
     location: string;
     description?: string;
+    phone?: string;
+    images?: string[];
 }) {
     const { data, error } = await supabase.from("listings").insert(listing).select().single();
+    if (error) throw error;
+    return data;
+}
+
+export async function getListingById(id: string) {
+    const { data, error } = await supabase
+        .from("listings")
+        .select("*, profiles(full_name)")
+        .eq("id", id)
+        .single();
     if (error) throw error;
     return data;
 }

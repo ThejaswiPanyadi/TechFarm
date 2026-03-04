@@ -3,8 +3,10 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { UserRole } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function RegisterPage() {
+    const { t } = useLanguage();
     const router = useRouter();
     const role: UserRole = "farmer"; // Admin accounts are created via Supabase dashboard only
     const [fullName, setFullName] = useState("");
@@ -86,12 +88,10 @@ export default function RegisterPage() {
                 </div>
 
                 {/* Title */}
-                <h1 className="text-2xl font-bold text-center mb-1">Create Account</h1>
+                <h1 className="text-2xl font-bold text-center mb-1">{t("createAccount")}</h1>
                 <p className="text-center text-gray-500 mb-6">
-                    Join TechFarm today
+                    {t("joinTechFarm")}
                 </p>
-
-
 
                 {/* Error Message */}
                 {error && (
@@ -103,7 +103,7 @@ export default function RegisterPage() {
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="text-sm font-medium">Full Name</label>
+                        <label className="text-sm font-medium">{t("fullName")}</label>
                         <input
                             type="text"
                             placeholder="Ramesh Kumar"
@@ -114,7 +114,7 @@ export default function RegisterPage() {
                         />
                     </div>
                     <div>
-                        <label className="text-sm font-medium">Email</label>
+                        <label className="text-sm font-medium">{t("email")}</label>
                         <input
                             type="email"
                             placeholder="your@email.com"
@@ -125,7 +125,7 @@ export default function RegisterPage() {
                         />
                     </div>
                     <div>
-                        <label className="text-sm font-medium">Password</label>
+                        <label className="text-sm font-medium">{t("password")}</label>
                         <input
                             type="password"
                             placeholder="Min 6 characters"
@@ -137,7 +137,7 @@ export default function RegisterPage() {
                         />
                     </div>
                     <div>
-                        <label className="text-sm font-medium">Phone Number</label>
+                        <label className="text-sm font-medium">{t("userPhone")}</label>
                         <input
                             type="tel"
                             placeholder="+91 98765 43210"
@@ -147,29 +147,45 @@ export default function RegisterPage() {
                         />
                     </div>
                     <div>
-                        <label className="text-sm font-medium">Location</label>
-                        <input
-                            type="text"
-                            placeholder="Village, District, State"
-                            className="w-full mt-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600"
+                        <label className="text-sm font-medium">{t("village")}</label>
+                        <select
+                            className="w-full mt-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600 bg-white"
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
-                        />
+                            required
+                        >
+                            <option value="">— {t("village")} —</option>
+                            <option value="Kadaba">Kadaba</option>
+                            <option value="Nelyadi">Nelyadi</option>
+                            <option value="Kaniyoor">Kaniyoor</option>
+                            <option value="Panja">Panja</option>
+                            <option value="Sullia">Sullia</option>
+                            <option value="Bellare">Bellare</option>
+                            <option value="Subrahmanya">Subrahmanya</option>
+                            <option value="Aranthodu">Aranthodu</option>
+                            <option value="Guthigar">Guthigar</option>
+                            <option value="Balila">Balila</option>
+                            <option value="Ballya">Ballya</option>
+                            <option value="Kutrupadi">Kutrupadi</option>
+                        </select>
+                        <p className="text-xs text-gray-500 mt-1.5">
+                            <b> ℹ️ Machine rental service is available only in Kadaba and Sullia taluk villages.</b>
+                        </p>
                     </div>
                     <button
                         type="submit"
                         disabled={loading}
                         className="w-full bg-green-700 text-white py-3 rounded-lg font-semibold hover:bg-green-800 transition disabled:opacity-60"
                     >
-                        {loading ? "Creating account..." : "Create Account"}
+                        {loading ? "Creating account..." : t("createAccount")}
                     </button>
                 </form>
 
                 {/* Login Link */}
                 <p className="text-center text-sm text-gray-500 mt-6">
-                    Already have an account?{" "}
+                    {t("alreadyHaveAccount")}{" "}
                     <Link href="/login" className="text-green-700 font-medium hover:underline">
-                        Login
+                        {t("login")}
                     </Link>
                 </p>
             </div>

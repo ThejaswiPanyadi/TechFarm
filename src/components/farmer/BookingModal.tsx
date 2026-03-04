@@ -26,6 +26,8 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
   const [manualName, setManualName] = useState("");
   const [manualPhone, setManualPhone] = useState("");
   const [manualLocation, setManualLocation] = useState("");
+  // Optional override of profile village for profile mode
+  const [locationOverride, setLocationOverride] = useState("");
   const [notes, setNotes] = useState("");
 
   // Dates
@@ -44,12 +46,15 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
       : 0;
   const total = days * price;
 
-  // Load profile on mount
+  // Load profile on mount; pre-fill locationOverride with stored village
   useEffect(() => {
     if (!user) return;
     setProfileLoading(true);
     getProfile(user.id)
-      .then(setProfileData)
+      .then((p) => {
+        setProfileData(p);
+        if (p?.location) setLocationOverride(p.location);
+      })
       .catch(console.error)
       .finally(() => setProfileLoading(false));
   }, [user]);
@@ -57,12 +62,15 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
   // Derived customer fields based on mode
   const customerName = customerMode === "profile" ? (profileData?.full_name ?? "") : manualName;
   const customerPhone = customerMode === "profile" ? (profileData?.phone ?? "") : manualPhone;
-  const customerLocation = customerMode === "profile" ? (profileData?.location ?? "") : manualLocation;
+  // For profile mode use override (which defaults to stored village); for manual mode use selection
+  const customerLocation = customerMode === "profile"
+    ? (locationOverride || profileData?.location || "")
+    : manualLocation;
 
   // Validate step 1
   const step1Valid =
     customerMode === "profile"
-      ? !!profileData
+      ? !!profileData && customerLocation.trim() !== ""
       : manualName.trim() !== "" && manualPhone.trim() !== "" && manualLocation.trim() !== "";
 
   // Validate step 2
@@ -118,10 +126,10 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
             {steps.map((s, i) => (
               <div key={s} className="flex items-center gap-2">
                 <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all ${i < currentStepIdx
-                    ? "bg-green-600 text-white"
-                    : i === currentStepIdx
-                      ? "bg-green-700 text-white"
-                      : "bg-gray-100 text-gray-400"
+                  ? "bg-green-600 text-white"
+                  : i === currentStepIdx
+                    ? "bg-green-700 text-white"
+                    : "bg-gray-100 text-gray-400"
                   }`}>
                   <span>{i < currentStepIdx ? "✓" : i + 1}</span>
                   <span>{stepLabels[s]}</span>
@@ -150,8 +158,8 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
                 <button
                   onClick={() => setCustomerMode("profile")}
                   className={`p-4 rounded-xl border-2 text-left transition ${customerMode === "profile"
-                      ? "border-green-600 bg-green-50"
-                      : "border-gray-200 hover:border-gray-300"
+                    ? "border-green-600 bg-green-50"
+                    : "border-gray-200 hover:border-gray-300"
                     }`}
                 >
                   <div className="text-lg mb-1">👤</div>
@@ -162,8 +170,8 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
                 <button
                   onClick={() => setCustomerMode("manual")}
                   className={`p-4 rounded-xl border-2 text-left transition ${customerMode === "manual"
-                      ? "border-green-600 bg-green-50"
-                      : "border-gray-200 hover:border-gray-300"
+                    ? "border-green-600 bg-green-50"
+                    : "border-gray-200 hover:border-gray-300"
                     }`}
                 >
                   <div className="text-lg mb-1">✏️</div>
@@ -173,7 +181,7 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
               </div>
 
               {customerMode === "profile" && (
-                <div className="bg-gray-50 rounded-xl p-4 space-y-2">
+                <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                   {profileLoading ? (
                     <p className="text-sm text-gray-400">Loading profile...</p>
                   ) : profileData ? (
@@ -186,9 +194,34 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
                         <span className="text-xs font-medium text-gray-500 w-20">Phone</span>
                         <span className="text-sm">{profileData.phone || <span className="text-gray-400 italic">Not set</span>}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-gray-500 w-20">Location</span>
-                        <span className="text-sm">{profileData.location || <span className="text-gray-400 italic">Not set</span>}</span>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-gray-500 w-20">Village</span>
+                          <span className="text-sm text-gray-700">{profileData.location || <span className="text-gray-400 italic">Not set</span>}</span>
+                        </div>
+                        {/* Optional location override */}
+                        <div>
+                          <label className="text-xs text-gray-500 block mb-1">Override village for this booking (optional)</label>
+                          <select
+                            value={locationOverride}
+                            onChange={(e) => setLocationOverride(e.target.value)}
+                            className="w-full border rounded-lg p-2 text-sm bg-white"
+                          >
+                            <option value="">— Same as profile ({profileData.location || "not set"}) —</option>
+                            <option value="Kadaba">Kadaba</option>
+                            <option value="Nelyadi">Nelyadi</option>
+                            <option value="Kaniyoor">Kaniyoor</option>
+                            <option value="Panja">Panja</option>
+                            <option value="Sullia">Sullia</option>
+                            <option value="Bellare">Bellare</option>
+                            <option value="Subrahmanya">Subrahmanya</option>
+                            <option value="Aranthodu">Aranthodu</option>
+                            <option value="Guthigar">Guthigar</option>
+                            <option value="Balila">Balila</option>
+                            <option value="Ballya">Ballya</option>
+                            <option value="Kutrupadi">Kutrupadi</option>
+                          </select>
+                        </div>
                       </div>
                       {(!profileData.phone || !profileData.location) && (
                         <p className="text-xs text-amber-600 mt-2">⚠ Some profile fields are empty. Consider entering details manually.</p>
@@ -219,18 +252,32 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
                       value={manualPhone}
                       onChange={(e) => setManualPhone(e.target.value)}
                       placeholder="e.g. 9876543210"
-                      className="w-full border rounded-lg p-3 text-sm"
+                      className="w-full border rounded-lg p-3 text-sm" required
                     />
                   </div>
                   <div>
                     <label className="text-sm font-medium block mb-1">Location *</label>
-                    <input
-                      type="text"
+                    <select
                       value={manualLocation}
                       onChange={(e) => setManualLocation(e.target.value)}
-                      placeholder="Your village / town"
-                      className="w-full border rounded-lg p-3 text-sm"
-                    />
+                      className="w-full border rounded-lg p-3 text-sm bg-white"
+                    >
+                      <option value="">— Select your village —</option>
+                      <option value="Kadaba">Kadaba</option>
+                      <option value="Nelyadi">Nelyadi</option>
+                      <option value="Kaniyoor">Kaniyoor</option>
+                      <option value="Panja">Panja</option>
+                      <option value="Sullia">Sullia</option>
+                      <option value="Bellare">Bellare</option>
+                      <option value="Subrahmanya">Subrahmanya</option>
+                      <option value="Aranthodu">Aranthodu</option>
+                      <option value="Guthigar">Guthigar</option>
+                      <option value="Balila">Balila</option>
+                      <option value="Ballya Kutrupadi">Ballya Kutrupadi</option>
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1.5">
+                      ℹ️ Machine rental service is available only in Kadaba and Sullia taluk villages.
+                    </p>
                   </div>
                   <div>
                     <label className="text-sm font-medium block mb-1">Notes (optional)</label>
@@ -363,7 +410,7 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
                   <div className="bg-gray-50 rounded-xl p-4 text-center">
                     <p className="text-sm font-medium text-gray-700 mb-3">Scan QR to pay ₹{total}</p>
                     <img
-                      src="/admin-qr.png"
+                      src="/myqr-code.jpg"
                       alt="Admin Payment QR"
                       className="w-48 h-48 object-contain mx-auto rounded-lg border"
                     />
@@ -373,8 +420,8 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
                   <button
                     onClick={() => setQrConfirmed(true)}
                     className={`w-full py-3 rounded-xl text-sm font-medium transition ${qrConfirmed
-                        ? "bg-green-100 text-green-700 border border-green-300 cursor-default"
-                        : "bg-blue-600 text-white hover:bg-blue-700"
+                      ? "bg-green-100 text-green-700 border border-green-300 cursor-default"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
                       }`}
                   >
                     {qrConfirmed ? "✓ Payment Confirmed — Ready to Submit" : "I Have Paid"}

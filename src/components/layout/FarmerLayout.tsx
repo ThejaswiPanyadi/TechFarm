@@ -2,6 +2,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import {
   Leaf,
   LayoutDashboard,
@@ -20,16 +21,17 @@ interface FarmerLayoutProps {
 }
 
 export default function FarmerLayout({ children }: FarmerLayoutProps) {
+  const { t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
   const { profile, signOut } = useAuth();
 
   const navItems = [
-    { name: "Dashboard", path: "/farmer", icon: LayoutDashboard },
-    { name: "Rent Machines", path: "/machines", icon: Tractor },
-    { name: "My Bookings", path: "/farmer/bookings", icon: ClipboardList },
-    { name: "My Listings", path: "/farmer/listings", icon: ShoppingBasket },
-    { name: "Add Listing", path: "/farmer/add-listing", icon: Plus },
+    { name: t("dashboard"), path: "/farmer", icon: LayoutDashboard },
+    { name: t("rentMachines"), path: "/machines", icon: Tractor },
+    { name: t("myBookings"), path: "/farmer/bookings", icon: ClipboardList },
+    { name: t("myListings"), path: "/farmer/listings", icon: ShoppingBasket },
+    { name: t("addListing"), path: "/farmer/add-listing", icon: Plus },
   ];
 
   const isActive = (path: string) => router.pathname === path;
@@ -76,8 +78,8 @@ export default function FarmerLayout({ children }: FarmerLayoutProps) {
                 <User className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-semibold">{profile?.full_name ?? "Farmer"}</p>
-                <p className="text-sm text-white/70">Farmer</p>
+                <p className="font-semibold">{profile?.full_name ?? t("farmer")}</p>
+                <p className="text-sm text-white/70">{t("farmer")}</p>
               </div>
             </div>
           </div>
@@ -108,7 +110,7 @@ export default function FarmerLayout({ children }: FarmerLayoutProps) {
               className="flex items-center gap-3 px-4 py-3 w-full rounded-xl hover:bg-green-700 transition"
             >
               <LogOut className="w-5 h-5" />
-              Logout
+              {t("logout")}
             </button>
           </div>
 
@@ -128,14 +130,14 @@ export default function FarmerLayout({ children }: FarmerLayoutProps) {
             <Menu />
           </button>
 
-          <h1 className="text-xl font-bold">Farmer Dashboard</h1>
+          <h1 className="text-xl font-bold">{t("dashboard")}</h1>
 
           <div className="ml-auto">
             <Link
               href="/marketplace"
               className="border border-green-700 text-green-700 px-4 py-2 rounded-lg hover:bg-green-700 hover:text-white transition"
             >
-              Marketplace
+              {t("marketplace")}
             </Link>
           </div>
 

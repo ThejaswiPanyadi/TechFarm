@@ -10,6 +10,10 @@ export default function Home() {
     router.push("/machines");
   };
 
+  const handleMarketClick = () => {
+    router.push("/marketplace");
+  };
+
   return (
     <Layout>
       <div className="bg-[#d99c4e]">
@@ -44,7 +48,7 @@ export default function Home() {
                 </button>
 
                 <button
-                  onClick={handleRentClick}
+                  onClick={handleMarketClick}
                   className="border border-white px-6 py-3 rounded-lg"
                 >
                   🌱 {t("browseBtn")}
@@ -109,7 +113,7 @@ export default function Home() {
                 </p>
 
                 <button
-                  onClick={handleRentClick}
+                  onClick={handleMarketClick}
                   className="text-green-700 font-medium"
                 >
                   {t("learnMore")} →
