@@ -78,13 +78,32 @@ export async function createBooking(booking: any) {
 
 export async function updateBookingStatus(
     id: string,
-    status: "Approved" | "Rejected" | "Confirmed" | "Cancelled" | "Pending Payment" | "Waiting Admin Approval"
+    status:
+        | "Approved"
+        | "Rejected"
+        | "Confirmed"
+        | "Cancelled"
+        | "Pending Payment"
+        | "Waiting Admin Approval"
+        | "Completed"
+        | "Late Return"
+        | "Overdue"
 ) {
     return bookingsApi("PATCH", { id, status });
 }
 
 export async function markCashPaid(id: string) {
     return updateBookingStatus(id, "Confirmed");
+}
+
+/** Admin action: record machine return, compute late fee on the server. */
+export async function returnMachine(id: string) {
+    return bookingsApi("PATCH", { id, action: "returnMachine" });
+}
+
+/** Mark a single booking as Overdue. */
+export async function markBookingOverdue(id: string) {
+    return updateBookingStatus(id, "Overdue");
 }
 
 // ─── LISTINGS ─────────────────────────────────────────────

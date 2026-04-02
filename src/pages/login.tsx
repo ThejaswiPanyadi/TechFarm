@@ -45,7 +45,7 @@ export default function LoginPage() {
     // Fetch profile to get real role (maybeSingle won't error if row is missing)
     let { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("role")
+      .select("role, status")
       .eq("id", data.user.id)
       .maybeSingle();
 
@@ -61,7 +61,7 @@ export default function LoginPage() {
       const { data: newProfile, error: insertError } = await supabase
         .from("profiles")
         .insert({ id: data.user.id, role: "farmer", full_name: null })
-        .select("role")
+        .select("role, status")
         .single();
 
       if (insertError || !newProfile) {
@@ -72,15 +72,23 @@ export default function LoginPage() {
       profile = newProfile;
     }
 
-    // Enforce role matching
-    if (profile.role !== role) {
+    // Blocked account check
+    if ((profile as any).status === "blocked") {
       await supabase.auth.signOut();
-      setError(`Login failed: Your account is registered as a ${profile.role}, not an ${role}.`);
+      setError("Your account has been restricted. Please contact admin.");
       setLoading(false);
       return;
     }
 
-    if (profile.role === "admin") {
+    // Enforce role matching
+    if (profile!.role !== role) {
+      await supabase.auth.signOut();
+      setError(`Login failed: Your account is registered as a ${profile!.role}, not an ${role}.`);
+      setLoading(false);
+      return;
+    }
+
+    if (profile!.role === "admin") {
       router.push("/admin");
     } else {
       router.push("/farmer");

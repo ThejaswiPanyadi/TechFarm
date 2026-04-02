@@ -40,7 +40,7 @@ export default function FarmerMachines() {
                                     <div className="w-full h-40 bg-gray-50 rounded-lg mb-4 flex items-center justify-center overflow-hidden border">
                                         {mainImg ? (
                                             <img src={mainImg} alt={machine.name}
-                                                className="max-w-full max-h-full object-contain" />
+                                                className="max-w-full max-h-full object-contain" /> 
                                         ) : (
                                             <div className="text-gray-400">
                                                 🚜 No Image

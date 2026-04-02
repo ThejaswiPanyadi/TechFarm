@@ -63,8 +63,61 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (req.method === "PATCH") {
-        const { id, ...updates } = req.body;
+        const { id, action, ...updates } = req.body;
 
+        // Only admins can perform return/status actions
+        if (action === "returnMachine") {
+            if (user.role !== "admin") {
+                return res.status(403).json({ error: "Forbidden" });
+            }
+
+            // Fetch the booking with machine price
+            const { data: booking, error: fetchError } = await supabaseAdmin
+                .from("bookings")
+                .select("*, machines(price_per_day)")
+                .eq("id", id)
+                .single();
+
+            if (fetchError || !booking) {
+                return res.status(404).json({ error: "Booking not found" });
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const actualReturnDate = today.toISOString().split("T")[0];
+
+            const toDate = new Date(booking.to_date);
+            toDate.setHours(0, 0, 0, 0);
+
+            const msPerDay = 1000 * 60 * 60 * 24;
+            const lateDays = Math.max(0, Math.round((today.getTime() - toDate.getTime()) / msPerDay));
+            const pricePerDay: number = booking.machines?.price_per_day ?? 0;
+            const lateFee = lateDays > 0 ? lateDays * pricePerDay : 0;
+            const newStatus = lateDays > 0 ? "Late Return" : "Completed";
+
+            const { data: updatedBooking, error: updateError } = await supabaseAdmin
+                .from("bookings")
+                .update({
+                    status: newStatus,
+                    actual_return_date: actualReturnDate,
+                    late_fee: lateFee,
+                })
+                .eq("id", id)
+                .select()
+                .single();
+
+            if (updateError) return res.status(500).json({ error: updateError.message });
+
+            // Machine is returned — mark it available again
+            await supabaseAdmin
+                .from("machines")
+                .update({ status: "Available" })
+                .eq("id", booking.machine_id);
+
+            return res.status(200).json(updatedBooking);
+        }
+
+        // ── Standard status update ──────────────────────────────────────
         // Check ownership if not admin
         if (user.role !== "admin") {
             const { data: existing } = await supabaseAdmin
@@ -76,8 +129,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             if (!existing || existing.farmer_id !== user.id) {
                 return res.status(403).json({ error: "Forbidden" });
             }
-            // Farmers can only cancel their own bookings (if applicable)
-            // For now, we'll allow status updates but admin usually does approval
         }
 
         const { data: updatedBooking, error } = await supabaseAdmin

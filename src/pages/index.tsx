@@ -1,13 +1,19 @@
 import Layout from "@/components/layout/Layout";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
 
 export default function Home() {
   const { t } = useLanguage();
   const router = useRouter();
+  const { user } = useAuth();
 
   const handleRentClick = () => {
-    router.push("/machines");
+    if (!user) {
+      router.push("/login");
+    } else {
+      router.push("/machines");
+    }
   };
 
   const handleMarketClick = () => {
@@ -44,7 +50,7 @@ export default function Home() {
                   onClick={handleRentClick}
                   className="bg-yellow-400 text-black px-6 py-3 rounded-lg font-medium"
                 >
-                  🚜 {t("rentBtn")}
+                  🚜 {user ? t("rentBtn") : t("availableMachines")}
                 </button>
 
                 <button
@@ -79,7 +85,7 @@ export default function Home() {
 
               <div className="p-6">
                 <h3 className="text-xl font-semibold mb-2">
-                  🚜 {t("servicesRent")}
+                  🚜 {user ? t("servicesRent") : t("availableMachines")}
                 </h3>
 
                 <p className="text-gray-600 mb-4 text-sm sm:text-base">

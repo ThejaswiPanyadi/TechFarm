@@ -14,6 +14,12 @@ export function useAuthGuard(requiredRole: UserRole) {
             return;
         }
 
+        // Blocked users are redirected regardless of role
+        if (profile && profile.status === "blocked") {
+            router.replace("/blocked");
+            return;
+        }
+
         if (profile && profile.role !== requiredRole) {
             router.replace("/unauthorized");
         }

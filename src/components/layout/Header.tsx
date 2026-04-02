@@ -103,11 +103,11 @@ export default function Header() {
           </Link>
 
           <Link
-            href="/machines"
+            href={session ? "/machines" : "/login"}
             className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1.5 rounded-lg"
           >
             <Tractor className="w-4 h-4" />
-            {t("rentMachines")}
+            {session ? t("rentMachines") : t("availableMachines")}
           </Link>
 
           <Link
@@ -258,11 +258,11 @@ export default function Header() {
               </Link>
 
               <Link
-                href="/machines"
+                href={session ? "/machines" : "/login"}
                 onClick={() => setOpen(false)}
                 className="block px-4 py-3 rounded-lg"
               >
-                🚜 {t("rentMachines")}
+                🚜 {session ? t("rentMachines") : t("availableMachines")}
               </Link>
 
               <Link

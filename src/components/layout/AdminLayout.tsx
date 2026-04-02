@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   Shield,
+  Users,
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -32,6 +33,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     { name: t("bookingRequests"), path: "/admin/bookings", icon: ClipboardList },
     { name: t("availabilityCalendar"), path: "/admin/calendar", icon: Calendar },
     { name: t("marketplaceAdmin"), path: "/admin/marketplace", icon: Settings },
+    { name: "User Management", path: "/admin/users", icon: Users },
   ];
 
   const isActive = (path: string) => router.pathname === path;
