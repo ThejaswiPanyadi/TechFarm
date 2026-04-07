@@ -99,7 +99,7 @@ export default function Header() {
         <nav className="hidden md:flex items-center gap-10 text-gray-700 font-medium">
           <Link href="/"
             className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1.5 rounded-lg">
-            {t("home")}
+            {t("nav.home")}
           </Link>
 
           <Link
@@ -107,14 +107,14 @@ export default function Header() {
             className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1.5 rounded-lg"
           >
             <Tractor className="w-4 h-4" />
-            {session ? t("rentMachines") : t("availableMachines")}
+            {session ? t("nav.rentMachines") : t("nav.availableMachines")}
           </Link>
 
           <Link
             href={session ? "/marketplace" : "/register?redirect=/marketplace"}
             className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1.5 rounded-lg">
             <Leaf className="w-4 h-4" />
-            {t("cropsSeeds")}
+            {t("nav.cropsSeeds")}
           </Link>
         </nav>
 
@@ -140,7 +140,7 @@ export default function Header() {
                 className="flex items-center gap-1.5 text-gray-700 hover:text-green-700 font-medium"
               >
                 <LayoutDashboard className="w-4 h-4" />
-                Dashboard
+                {t("nav.dashboard")}
               </Link>
 
               {/* 🔹 PROFILE AVATAR + DROPDOWN */}
@@ -162,7 +162,7 @@ export default function Header() {
                       </div>
                       <div className="text-white min-w-0">
                         <p className="font-semibold text-sm truncate">{profile?.full_name || "—"}</p>
-                        <p className="text-green-200 text-xs capitalize">{profile?.role || "user"}</p>
+                        <p className="text-green-200 text-xs capitalize">{profile?.role === 'admin' ? t("nav.admin") : t("nav.farmer")}</p>
                       </div>
                     </div>
 
@@ -174,7 +174,7 @@ export default function Header() {
                       </div>
                       <div className="flex items-start gap-3 text-sm text-gray-700">
                         <MapPin className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-                        <span>{profile?.location || <span className="text-gray-400 italic">Location not set</span>}</span>
+                        <span>{profile?.location || <span className="text-gray-400 italic">{t("auth.village")}</span>}</span>
                       </div>
                     </div>
 
@@ -184,7 +184,7 @@ export default function Header() {
                         className="w-full flex items-center justify-center gap-2 bg-red-600 text-white py-2 rounded-lg text-sm hover:bg-red-700 transition"
                       >
                         <LogOut className="w-4 h-4" />
-                        Logout
+                        {t("nav.logout")}
                       </button>
                     </div>
                   </div>
@@ -194,14 +194,14 @@ export default function Header() {
           ) : (
             <>
               <Link href="/login" className="text-gray-700 hover:text-green-700">
-                {t("login")}
+                {t("nav.login")}
               </Link>
 
               <Link
                 href="/register"
                 className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition"
               >
-                {t("register")}
+                {t("nav.register")}
               </Link>
             </>
           )}
@@ -254,7 +254,7 @@ export default function Header() {
                 onClick={() => setOpen(false)}
                 className="block bg-green-100 px-4 py-3 rounded-lg"
               >
-                {t("home")}
+                {t("nav.home")}
               </Link>
 
               <Link
@@ -262,7 +262,7 @@ export default function Header() {
                 onClick={() => setOpen(false)}
                 className="block px-4 py-3 rounded-lg"
               >
-                🚜 {session ? t("rentMachines") : t("availableMachines")}
+                {t("nav.rentMachines")}
               </Link>
 
               <Link
@@ -270,7 +270,7 @@ export default function Header() {
                 onClick={() => setOpen(false)}
                 className="block px-4 py-3 rounded-lg"
               >
-                🌱 {t("cropsSeeds")}
+                🌱 {t("nav.cropsSeeds")}
               </Link>
             </nav>
 
@@ -295,7 +295,7 @@ export default function Header() {
                   <Link href={dashboardHref} onClick={() => setOpen(false)}>
                     <button className="w-full flex items-center justify-center gap-2 border border-green-700 text-green-700 py-3 rounded-lg">
                       <LayoutDashboard className="w-4 h-4" />
-                      Dashboard
+                      {t("nav.dashboard")}
                     </button>
                   </Link>
 
@@ -304,20 +304,20 @@ export default function Header() {
                     className="w-full flex items-center justify-center gap-2 bg-red-600 text-white py-3 rounded-lg hover:bg-red-700"
                   >
                     <LogOut className="w-4 h-4" />
-                    Logout
+                    {t("nav.logout")}
                   </button>
                 </>
               ) : (
                 <>
                   <Link href="/login" onClick={() => setOpen(false)}>
                     <button className="w-full border border-green-700 text-green-700 py-3 rounded-lg">
-                      {t("login")}
+                      {t("nav.login")}
                     </button>
                   </Link>
 
                   <Link href="/register" onClick={() => setOpen(false)}>
                     <button className="w-full bg-green-700 text-white py-3 rounded-lg">
-                      {t("register")}
+                      {t("nav.register")}
                     </button>
                   </Link>
                 </>

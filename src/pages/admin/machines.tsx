@@ -39,7 +39,6 @@ export default function ManageMachines() {
 
   const [newMachine, setNewMachine] = useState({
     name: "",
-    description: "",
     location: "",
     price_per_day: "",
     status: "Available",
@@ -117,7 +116,7 @@ export default function ManageMachines() {
       setDebugLog(prev => prev + ` | Success! Resetting form...`);
       setMachines([m, ...machines]);
       setShowForm(false);
-      setNewMachine({ name: "", description: "", location: "", price_per_day: "", status: "Available" });
+      setNewMachine({ name: "", location: "", price_per_day: "", status: "Available" });
       setPreviews([]);
       setDebugLog(""); // clear on success
     } catch (err: any) {
@@ -135,7 +134,7 @@ export default function ManageMachines() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm(t("remove") + "?")) return;
+    if (!confirm(`${t("common.remove")}?`)) return;
     await adminFetch("DELETE", { id });
     setMachines((prev) => prev.filter((m) => m.id !== id));
   }
@@ -144,14 +143,14 @@ export default function ManageMachines() {
     <AdminLayout>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">{t("manageMachines")}</h1>
-          <p className="text-gray-600">{t("manageMachinesDesc")}</p>
+          <h1 className="text-2xl font-bold">{t("machines.manageMachines")}</h1>
+          <p className="text-gray-600">{t("machines.manageMachinesDesc")}</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
           className="bg-green-700 text-white px-4 py-2 rounded-lg hover:bg-green-800 transition"
         >
-          {t("addMachine")}
+          {t("machines.addMachine")}
         </button>
       </div>
 
@@ -168,19 +167,19 @@ export default function ManageMachines() {
       {/* Add Form */}
       {showForm && (
         <form onSubmit={handleAdd} className="bg-white p-6 rounded-xl shadow mb-8">
-          <h3 className="font-semibold text-lg mb-4">{t("newMachine")}</h3>
+          <h3 className="font-semibold text-lg mb-4">{t("machines.newMachine")}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-4">
-              <input type="text" required placeholder={t("machineName") + " *"} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+              <input type="text" required placeholder={t("machines.machineName") + " *"} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
                 value={newMachine.name} onChange={(e) => setNewMachine({ ...newMachine, name: e.target.value })} />
-              <input type="text" placeholder={t("cropLocation")} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+              <input type="text" placeholder={t("marketplace.locationPlaceholder")} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
                 value={newMachine.location} onChange={(e) => setNewMachine({ ...newMachine, location: e.target.value })} />
-              <input type="number" required placeholder={t("pricePerDay") + " *"} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+              <input type="number" required placeholder={t("machines.pricePerDay") + " *"} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
                 value={newMachine.price_per_day} onChange={(e) => setNewMachine({ ...newMachine, price_per_day: e.target.value })} />
               <select className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" value={newMachine.status}
                 onChange={(e) => setNewMachine({ ...newMachine, status: e.target.value })}>
-                <option value="Available">{t("available")}</option>
-                <option value="Unavailable">{t("unavailable")}</option>
+                <option value="Available">{t("machines.available")}</option>
+                <option value="Unavailable">{t("machines.unavailable")}</option>
               </select>
             </div>
 
@@ -203,21 +202,19 @@ export default function ManageMachines() {
                   <ImagePlus className="w-6 h-6" />
                 </button>
               </div>
-              <p className="text-xs text-gray-500 text-center">{t("addMachine")} Image(s)</p>
+              <p className="text-xs text-gray-500 text-center">{t("machines.addMachine")} Image(s)</p>
               <input type="file" multiple accept="image/*" className="hidden" ref={fileInputRef} onChange={handleFileSelect} />
             </div>
 
-            <textarea placeholder={t("description")} className="border p-2 rounded-lg col-span-1 md:col-span-2 min-h-[100px] focus:ring-2 focus:ring-green-500 outline-none"
-              value={newMachine.description} onChange={(e) => setNewMachine({ ...newMachine, description: e.target.value })} />
           </div>
           <div className="flex gap-3 mt-4">
             <button type="submit" disabled={saving}
               className="bg-green-700 text-white px-6 py-2 rounded-lg hover:bg-green-800 disabled:opacity-60 flex items-center gap-2 transition shadow-sm">
               {saving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-              {saving ? t("saving") : t("saveMachine")}
+              {saving ? t("machines.saving") : t("machines.saveMachine")}
             </button>
             <button type="button" onClick={() => setShowForm(false)} className="border px-6 py-2 rounded-lg hover:bg-gray-50 transition">
-              {t("cancel")}
+              {t("machines.cancel")}
             </button>
           </div>
         </form>
@@ -225,9 +222,9 @@ export default function ManageMachines() {
 
       {/* Machine Grid */}
       {loading ? (
-        <div className="text-center py-20 text-gray-400">{t("loadingMachines")}</div>
+        <div className="text-center py-20 text-gray-400">{t("machines.loading")}</div>
       ) : machines.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">{t("noMachines")}</div>
+        <div className="text-center py-20 text-gray-400">{t("machines.noMachines")}</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {machines.map((machine) => {
@@ -242,35 +239,32 @@ export default function ManageMachines() {
                   ) : (
                     <div className="flex flex-col items-center text-gray-300">
                       <ImagePlus className="w-10 h-10 mb-2 opacity-20" />
-                      <span className="text-sm">No Image</span>
+                      <span className="text-sm">{t("machines.noImage")}</span>
                     </div>
                   )}
                   <span className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold text-white shadow-sm ${machine.status === "Available" ? "bg-green-600" : "bg-red-600"
                     }`}>
-                    {machine.status === "Available" ? t("available") : t("unavailable")}
+                    {machine.status === "Available" ? t("machines.available") : t("machines.unavailable")}
                   </span>
                 </div>
                 <div className="p-5 flex-1 flex flex-col">
                   <h3 className="font-bold text-lg text-gray-800">{machine.name}</h3>
-                  <p className="text-gray-500 text-sm line-clamp-2 mt-1 min-h-[2.5rem] leading-relaxed">
-                    {machine.description || "No description provided."}
-                  </p>
                   <div className="mt-auto pt-4 space-y-3">
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       <span>📍</span>
-                      <span>{machine.location || "Location not specified"}</span>
+                      <span>{machine.location || t("machines.noLocation")}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <p className="font-bold text-xl text-green-700">₹{machine.price_per_day} <span className="text-xs text-gray-400 font-normal">/ day</span></p>
+                      <p className="font-bold text-xl text-green-700">₹{machine.price_per_day} <span className="text-xs text-gray-400 font-normal">{t("machines.perDay")}</span></p>
                     </div>
                     <div className="flex gap-2 pt-1">
                       <button onClick={() => handleToggle(machine.id, machine.status)}
                         className="flex-1 border border-gray-200 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition">
-                        {t("toggleStatus")}
+                        {t("machines.toggleStatus")}
                       </button>
                       <button onClick={() => handleDelete(machine.id)}
                         className="border border-red-100 text-red-500 px-3 py-2 rounded-lg text-sm font-medium hover:bg-red-50 transition">
-                        {t("remove")}
+                        {t("common.remove")}
                       </button>
                     </div>
                   </div>

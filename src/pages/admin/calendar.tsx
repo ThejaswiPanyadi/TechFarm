@@ -40,8 +40,8 @@ export default function AvailabilityCalendar() {
     <AdminLayout>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">{t("availabilityCalendar")}</h1>
-          <p className="text-gray-600">{t("availabilityCalendarDesc")}</p>
+          <h1 className="text-2xl font-bold">{t("admin.calendar.title")}</h1>
+          <p className="text-gray-600">{t("admin.calendar.desc")}</p>
         </div>
         <div className="flex items-center gap-4 bg-white px-4 py-2 rounded-xl border">
           <button onClick={prevMonth} className="p-1 hover:bg-gray-100 rounded-lg">
@@ -61,19 +61,19 @@ export default function AvailabilityCalendar() {
         <div className="flex gap-4 mb-6 text-sm">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-            <span>{t("confirmed")}</span>
+            <span>{t("admin.calendar.confirmed")}</span>
           </div>
           <div className="flex items-center gap-2 text-gray-400">
             <div className="w-3 h-3 bg-gray-200 rounded-full"></div>
-            <span>{t("available")}</span>
+            <span>{t("admin.calendar.available")}</span>
           </div>
         </div>
 
         {/* Days of Week */}
         <div className="grid grid-cols-7 gap-px mb-2">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+          {["sun", "mon", "tue", "wed", "thu", "fri", "sat"].map((day) => (
             <div key={day} className="text-center text-xs font-bold text-gray-400 py-2 uppercase tracking-wider">
-              {day}
+              {t(`admin.calendar.${day}`)}
             </div>
           ))}
         </div>
@@ -108,7 +108,7 @@ export default function AvailabilityCalendar() {
         <div className="fixed inset-0 bg-white/60 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
             <div className="w-10 h-10 border-4 border-green-700 border-t-transparent rounded-full animate-spin"></div>
-            <p className="font-semibold text-green-800">{t("loadingDash")}</p>
+            <p className="font-semibold text-green-800">{t("common.loading")}</p>
           </div>
         </div>
       )}

@@ -1,645 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContext, useContext, useState, useEffect } from "react";
+import en from "@/locales/en.json";
+import kn from "@/locales/kn.json";
+import hi from "@/locales/hi.json";
+import ml from "@/locales/ml.json";
 
 type Lang = "en" | "kn" | "hi" | "ml";
 
-const translations: Record<Lang, Record<string, string>> = {
-  en: {
-    // Nav
-    home: "Home",
-    rentMachines: "Rent Machines",
-    cropsSeeds: "Crops & Seeds",
-    login: "Login",
-    register: "Register",
-    marketplace: "Crop Marketplace",
-
-    // Home hero
-    badge: "Digitizing Rural Agriculture",
-    heroLine1: "Farm Smarter with",
-    heroLine2: "TechFarm",
-    heroDesc: "Rent agricultural machinery from Saya Enterprises and buy or sell crops and seeds directly from other farmers.",
-    rentBtn: "Rent Machines",
-    browseBtn: "Browse Crops",
-
-    // Home services
-    servicesTitle: "Our Services",
-    servicesSubtitle: "Everything you need to run a modern farm, in one place.",
-    servicesRent: "Rent Machines",
-    servicesRentDesc: "Access a wide range of agricultural machines available for daily rental. Save costs and increase efficiency.",
-    servicesMarket: "Crop Marketplace",
-    servicesMarketDesc: "Buy and sell crops and seeds directly with other farmers. Fresh produce, fair prices.",
-    learnMore: "Learn More",
-
-    // Auth
-    welcomeBack: "Welcome Back",
-    loginSubtitle: "Login to your TechFarm account",
-    email: "Email",
-    password: "Password",
-    signIn: "Sign In",
-    signUp: "Sign Up",
-    fullName: "Full Name",
-    village: "Village / Service Location",
-    userPhone: "Phone Number",
-    confirmPassword: "Confirm Password",
-    dontHaveAccount: "Don't have an account?",
-    alreadyHaveAccount: "Already have an account?",
-    createAccount: "Create Account",
-    joinTechFarm: "Join TechFarm as a farmer",
-    farmer: "Farmer",
-    admin: "Admin",
-
-    // Dashboards
-    dashboard: "Dashboard",
-    activeBookings: "Active Bookings",
-    myListings: "My Listings",
-    recentBookings: "Recent Bookings",
-    viewAll: "View All",
-    welcomeFarmer: "Welcome back",
-    manageDesc: "Manage your machine rentals and crop listings from here.",
-    serviceVillage: "Service village",
-    rentMachine: "Rent a Machine",
-    rentMachineDesc: "Browse available farm machinery",
-    addListing: "Add Listing",
-    addListingDesc: "Sell your crops, seeds, or plants",
-    browseMarket: "Browse Marketplace",
-    browseMarketDesc: "Find crops from other farmers",
-    myBookings: "My Bookings",
-    manageMachines: "Manage Machines",
-    bookingRequests: "Booking Requests",
-    availabilityCalendar: "Availability Calendar",
-    marketplaceAdmin: "Marketplace Admin",
-    adminPanel: "Admin Panel – Saya Enterprises",
-    logout: "Logout",
-    welcomeAdmin: "Welcome, Admin! 👋",
-    adminDashDesc: "Manage your machine rentals and monitor booking requests.",
-    loadingDash: "Loading dashboard...",
-    totalMachines: "Total Machines",
-    pendingRequests: "Pending Requests",
-    approvedBookings: "Approved Bookings",
-    availableMachines: "Available Machines",
-    manageMachinesDesc: "Add, edit, or remove rental machines",
-    bookingRequestsDesc: "Review and manage farmer bookings",
-    availabilityCalendarDesc: "View machine schedules",
-    recentBookingReq: "Recent Booking Requests",
-    noBookings: "No bookings yet.",
-    approve: "Approve",
-    reject: "Reject",
-    addMachine: "+ Add Machine",
-    newMachine: "New Machine",
-    machineName: "Machine Name",
-    pricePerDay: "Price per day (₹)",
-    imageUrl: "Image URL",
-    saving: "Saving...",
-    saveMachine: "Save Machine",
-    cancel: "Cancel",
-    toggleStatus: "Toggle Status",
-    pendingPayment: "Pending Payment",
-    waitingAdminApproval: "Waiting Admin Approval",
-    needAttention: "need attention",
-    markCashPaid: "Mark Cash Paid",
-    cashPayDue: "Cash payment due by",
-    online: "Online",
-    cash: "Cash",
-    all: "All",
-    confirmed: "Confirmed",
-    cancelled: "Cancelled",
-    marketplaceAdminDesc: "Monitor and manage crop/seed listings posted by farmers.",
-    searchListingsSellers: "Search listings or sellers...",
-    totalListings: "Total Listings",
-    activeListings: "Active Listings",
-    uniqueSellers: "Unique Sellers",
-    product: "Product",
-    seller: "Seller",
-
-    // Machines page
-    machinesTitle: "Rent Agricultural Machines",
-    machinesSubtitle: "Browse and book available agricultural machines.",
-    noMachines: "No machines available yet.",
-    loadingMachines: "Loading machines...",
-    bookMachine: "Book Machine",
-    notAvailable: "Not Available",
-    available: "✓ Available",
-    unavailable: "✗ Not Available",
-    perDay: "/ day",
-    bookingRequested: "✓ Booking Requested!",
-
-    // Marketplace
-    marketplaceTitle: "Crops & Seeds Marketplace",
-    marketplaceSubtitle: "Buy and sell crops and seeds directly with farmers.",
-    searchPlaceholder: "Search crops...",
-    locationPlaceholder: "Filter by location...",
-    noListings: "No listings found.",
-    loadingListings: "Loading listings...",
-    contactSeller: "Contact Seller",
-    postedBy: "Posted by",
-    viewDetails: "View Details",
-    callFarmer: "Call Farmer",
-    aboutListing: "About this listing",
-    sellerDetails: "Farmer / Seller Details",
-
-    // Add Listing Form
-    addNewListing: "Add New Listing",
-    listingFormDesc: "Share your crop, seeds, or plants with other farmers.",
-    cropName: "Crop / Seed Name",
-    cropType: "Type",
-    price: "Price",
-    quantity: "Quantity",
-    cropLocation: "Location",
-    farmerPhone: "Farmer Phone Number",
-    phoneHint: "Buyers will use this number to contact you directly.",
-    description: "Description",
-    descPlaceholder: "Describe your crop, quality, harvest method, etc.",
-    photos: "Photos",
-    tapToAdd: "Tap to add photos of your crop, seeds, or plants",
-    submitListing: "Submit Listing",
-    uploadingPhotos: "Uploading photos...",
-    submitting: "Submitting...",
-
-    // Footer
-    footerDesc: "Empowering rural farmers with digital agricultural services. by Saya Enterprises",
-    quickLinks: "Quick Links",
-    contactTitle: "Saya Enterprises",
-    rightsReserved: "© 2026 TechFarm by Saya Enterprises. All rights reserved.",
-    remove: "Remove",
-  },
-
-  kn: {
-    // Nav
-    home: "ಮುಖಪುಟ",
-    rentMachines: "ಯಂತ್ರ ಬಾಡಿಗೆ",
-    cropsSeeds: "ಬೆಳೆಗಳು ಮತ್ತು ಬೀಜಗಳು",
-    login: "ಲಾಗಿನ್",
-    register: "ನೋಂದಣಿ",
-    marketplace: "ಬೆಳೆ ಮಾರುಕಟ್ಟೆ",
-
-    // Home hero
-    badge: "ಗ್ರಾಮೀಣ ಕೃಷಿಯ ಡಿಜಿಟಲೀಕರಣ",
-    heroLine1: "ಚತುರವಾಗಿ ಕೃಷಿ ಮಾಡಿ",
-    heroLine2: "ಟೆಕ್‌ಫಾರ್ಮ್",
-    heroDesc: "ಸಾಯ ಎಂಟರ್‌ಪ್ರೈಸಸ್‌ನಿಂದ ಕೃಷಿ ಯಂತ್ರಗಳನ್ನು ಬಾಡಿಗೆಗೆ ಪಡೆಯಿರಿ ಮತ್ತು ರೈತರೊಂದಿಗೆ ನೇರವಾಗಿ ಬೆಳೆ ಹಾಗೂ ಬೀಜಗಳನ್ನು ವಹಿವಾಟು ಮಾಡಿ.",
-    rentBtn: "ಯಂತ್ರ ಬಾಡಿಗೆ",
-    browseBtn: "ಬೆಳೆ ವೀಕ್ಷಿಸಿ",
-
-    // Home services
-    servicesTitle: "ನಮ್ಮ ಸೇವೆಗಳು",
-    servicesSubtitle: "ಆಧುನಿಕ ಕೃಷಿಗೆ ಬೇಕಾದ ಎಲ್ಲವೂ ಒಂದೇ ಜಾಗದಲ್ಲಿ.",
-    servicesRent: "ಯಂತ್ರ ಬಾಡಿಗೆ",
-    servicesRentDesc: "ದೈನಂದಿನ ಬಾಡಿಗೆಗೆ ಲಭ್ಯವಿರುವ ವ್ಯಾಪಕ ಯಂತ್ರಗಳನ್ನು ಪ್ರವೇಶಿಸಿ.",
-    servicesMarket: "ಬೆಳೆ ಮಾರುಕಟ್ಟೆ",
-    servicesMarketDesc: "ರೈತರೊಂದಿಗೆ ನೇರವಾಗಿ ಬೆಳೆ ಮತ್ತು ಬೀಜಗಳನ್ನು ಖರೀದಿಸಿ ಮತ್ತು ಮಾರಿ.",
-    learnMore: "ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ",
-
-    // Auth
-    welcomeBack: "ಮತ್ತೆ ಸ್ವಾಗತ",
-    loginSubtitle: "ನಿಮ್ಮ ಟೆಕ್‌ಫಾರ್ಮ್ ಖಾತೆಗೆ ಲಾಗಿನ್ ಮಾಡಿ",
-    email: "ಇಮೇಲ್",
-    password: "ಪಾಸ್‌ವರ್ಡ್",
-    signIn: "ಸೈನ್ ಇನ್",
-    signUp: "ಸೈನ್ ಅಪ್",
-    fullName: "ಪೂರ್ಣ ಹೆಸರು",
-    village: "ಗ್ರಾಮ / ಸೇವಾ ಸ್ಥಳ",
-    userPhone: "ಫೋನ್ ಸಂಖ್ಯೆ",
-    confirmPassword: "ಪಾಸ್‌ವರ್ಡ್ ಖಚಿತಪಡಿಸಿ",
-    dontHaveAccount: "ಖಾತೆ ಇಲ್ಲವೇ?",
-    alreadyHaveAccount: "ಈಗಾಗಲೇ ಖಾತೆ ಇದೆಯೇ?",
-    createAccount: "ಖಾತೆ ರಚಿಸಿ",
-    joinTechFarm: "ರೈತನಾಗಿ ಟೆಕ್‌ಫಾರ್ಮ್‌ಗೆ ಸೇರಿ",
-    farmer: "ರೈತ",
-    admin: "ನಿರ್ವಾಹಕ",
-
-    // Dashboards
-    dashboard: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
-    activeBookings: "ಸಕ್ರಿಯ ಬುಕಿಂಗ್‌ಗಳು",
-    myListings: "ನನ್ನ ಪಟ್ಟಿಗಳು",
-    recentBookings: "ಇತ್ತೀಚಿನ ಬುಕಿಂಗ್‌ಗಳು",
-    viewAll: "ಎಲ್ಲವನ್ನೂ ವೀಕ್ಷಿಸಿ",
-    welcomeFarmer: "ಮತ್ತೆ ಸ್ವಾಗತ",
-    manageDesc: "ನಿಮ್ಮ ಯಂತ್ರ ಬಾಡಿಗೆಗಳು ಮತ್ತು ಬೆಳೆ ಪಟ್ಟಿಗಳನ್ನು ಇಲ್ಲಿಂದ ನಿರ್ವಹಿಸಿ.",
-    serviceVillage: "ಸೇವಾ ಗ್ರಾಮ",
-    rentMachine: "ಯಂತ್ರ ಬಾಡಿಗೆಗೆ ಪಡೆಯಿರಿ",
-    rentMachineDesc: "ಲಭ್ಯವಿರುವ ಕೃಷಿ ಯಂತ್ರಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
-    addListing: "ಪಟ್ಟಿ ಸೇರಿಸಿ",
-    addListingDesc: "ನಿಮ್ಮ ಬೆಳೆಗಳು, ಬೀಜಗಳು ಅಥವಾ ಸಸ್ಯಗಳನ್ನು ಮಾರಿ",
-    browseMarket: "ಮಾರುಕಟ್ಟೆ ವೀಕ್ಷಿಸಿ",
-    browseMarketDesc: "ಇತರ ರೈತರಿಂದ ಬೆಳೆಗಳನ್ನು ಹುಡುಕಿ",
-    myBookings: "ನನ್ನ ಬುಕಿಂಗ್‌ಗಳು",
-    manageMachines: "ಯಂತ್ರಗಳ ನಿರ್ವಹಣೆ",
-    bookingRequests: "ಬುಕಿಂಗ್ ವಿನಂತಿಗಳು",
-    availabilityCalendar: "ಲಭ್ಯತೆ ಕ್ಯಾಲೆಂಡರ್",
-    marketplaceAdmin: "ಮಾರುಕಟ್ಟೆ ನಿರ್ವಾಹಕ",
-    adminPanel: "ನಿರ್ವಾಹಕ ಫಲಕ - ಸಾಯ ಎಂಟರ್‌ಪ್ರೈಸಸ್",
-    logout: "ಲಾಗ್ ಔಟ್",
-    welcomeAdmin: "ಸ್ವಾಗತ, ನಿರ್ವಾಹಕರೇ! 👋",
-    adminDashDesc: "ನಿಮ್ಮ ಯಂತ್ರ ಬಾಡಿಗೆಗಳನ್ನು ನಿರ್ವಹಿಸಿ ಮತ್ತು ಬುಕಿಂಗ್ ವಿನಂತಿಗಳನ್ನು ಗಮನಿಸಿ.",
-    loadingDash: "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
-    totalMachines: "ಒಟ್ಟು ಯಂತ್ರಗಳು",
-    pendingRequests: "ಬಾಕಿ ಉಳಿದಿರುವ ವಿನಂತಿಗಳು",
-    approvedBookings: "ಅನುಮೋದಿತ ಬುಕಿಂಗ್‌ಗಳು",
-    availableMachines: "ಲಭ್ಯವಿರುವ ಯಂತ್ರಗಳು",
-    manageMachinesDesc: "ಬಾಡಿಗೆ ಯಂತ್ರಗಳನ್ನು ಸೇರಿಸಿ, ಎಡಿಟ್ ಮಾಡಿ ಅಥವಾ ತೆಗೆದುಹಾಕಿ",
-    bookingRequestsDesc: "ರೈತರ ಬುಕಿಂಗ್‌ಗಳನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತು ನಿರ್ವಹಿಸಿ",
-    availabilityCalendarDesc: "ಯಂತ್ರದ ವೇಳಾಪಟ್ಟಿಯನ್ನು ವೀಕ್ಷಿಸಿ",
-    recentBookingReq: "ಇತ್ತೀಚಿನ ಬುಕಿಂಗ್ ವಿನಂತಿಗಳು",
-    noBookings: "ಇನ್ನೂ ಯಾವುದೇ ಬುಕಿಂಗ್ ಇಲ್ಲ.",
-    approve: "ಅನುಮೋದಿಸಿ",
-    reject: "ತಿರಸ್ಕರಿಸಿ",
-    addMachine: "+ ಯಂತ್ರ ಸೇರಿಸಿ",
-    newMachine: "ಹೊಸ ಯಂತ್ರ",
-    machineName: "ಯಂತ್ರದ ಹೆಸರು",
-    pricePerDay: "ದಿನದ ಬಾಡಿಗೆ (₹)",
-    imageUrl: "ಚಿತ್ರದ ಲಿಂಕ್ (URL)",
-    saving: "ಉಳಿಸಲಾಗುತ್ತಿದೆ...",
-    saveMachine: "ಯಂತ್ರವನ್ನು ಉಳಿಸಿ",
-    cancel: "ರದ್ದುಮಾಡಿ",
-    toggleStatus: "ಸ್ಥಿತಿ ಬದಲಾಯಿಸಿ",
-    pendingPayment: "ಪಾವತಿ ಬಾಕಿ ಇದೆ",
-    waitingAdminApproval: "ನಿರ್ವಾಹಕರ ಅನುಮೋದನೆಗೆ ಕಾಯಲಾಗುತ್ತಿದೆ",
-    needAttention: "ಗಮನ ಬೇಕು",
-    markCashPaid: "ನಗದು ಪಾವತಿಯಾಗಿದೆ ಎಂದು ಗುರುತಿಸಿ",
-    cashPayDue: "ನಗದು ಪಾವತಿ ಕೊನೆಯ ದಿನಾಂಕ",
-    online: "ಆನ್‌ಲೈನ್",
-    cash: "ನಗದು",
-    all: "ಎಲ್ಲಾ",
-    confirmed: "ಖಚಿತಪಡಿಸಲಾಗಿದೆ",
-    cancelled: "ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ",
-    marketplaceAdminDesc: "ರೈತರು ಪೋಸ್ಟ್ ಮಾಡಿದ ಬೆಳೆ/ಬೀಜಗಳ ಪಟ್ಟಿಗಳನ್ನು ಗಮನಿಸಿ ಮತ್ತು ನಿರ್ವಹಿಸಿ.",
-    searchListingsSellers: "ಪಟ್ಟಿಗಳು ಅಥವಾ ಮಾರಾಟಗಾರರನ್ನು ಹುಡುಕಿ...",
-    totalListings: "ಒಟ್ಟು ಪಟ್ಟಿಗಳು",
-    activeListings: "ಸಕ್ರಿಯ ಪಟ್ಟಿಗಳು",
-    uniqueSellers: "ಅನನ್ಯ ಮಾರಾಟಗಾರರು",
-    product: "ಉತ್ಪನ್ನ",
-    seller: "ಮಾರಾಟಗಾರ",
-
-    // Machines page
-    machinesTitle: "ಕೃಷಿ ಯಂತ್ರಗಳನ್ನು ಬಾಡಿಗೆಗೆ ಪಡೆಯಿರಿ",
-    machinesSubtitle: "ಲಭ್ಯವಿರುವ ಕೃಷಿ ಯಂತ್ರಗಳನ್ನು ವೀಕ್ಷಿಸಿ ಮತ್ತು ಬುಕ್ ಮಾಡಿ.",
-    noMachines: "ಇನ್ನೂ ಯಾವುದೇ ಯಂತ್ರಗಳು ಲಭ್ಯವಿಲ್ಲ.",
-    loadingMachines: "ಯಂತ್ರಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
-    bookMachine: "ಯಂತ್ರ ಬುಕ್ ಮಾಡಿ",
-    notAvailable: "ಲಭ್ಯವಿಲ್ಲ",
-    available: "✓ ಲಭ್ಯವಿದೆ",
-    unavailable: "✗ ಲಭ್ಯವಿಲ್ಲ",
-    perDay: "/ ದಿನ",
-    bookingRequested: "✓ ಬುಕಿಂಗ್ ವಿನಂತಿ ಮಾಡಲಾಗಿದೆ!",
-
-    // Marketplace
-    marketplaceTitle: "ಬೆಳೆ ಮತ್ತು ಬೀಜ ಮಾರುಕಟ್ಟೆ",
-    marketplaceSubtitle: "ರೈತರೊಂದಿಗೆ ನೇರವಾಗಿ ಬೆಳೆ ಮತ್ತು ಬೀಜಗಳನ್ನು ಖರೀದಿಸಿ ಅಥವಾ ಮಾರಿ.",
-    searchPlaceholder: "ಬೆಳೆ ಹುಡುಕಿ...",
-    locationPlaceholder: "ಸ್ಥಳದ ಮೂಲಕ ಫಿಲ್ಟರ್...",
-    noListings: "ಯಾವುದೇ ಪಟ್ಟಿಗಳು ಕಂಡುಬಂದಿಲ್ಲ.",
-    loadingListings: "ಪಟ್ಟಿಗಳನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
-    contactSeller: "ಮಾರಾಟಗಾರರನ್ನು ಸಂಪರ್ಕಿಸಿ",
-    postedBy: "ಪೋಸ್ಟ್ ಮಾಡಿದವರು",
-    viewDetails: "ವಿವರಗಳನ್ನು ನೋಡಿ",
-    callFarmer: "ರೈತರಿಗೆ ಕರೆ ಮಾಡಿ",
-    aboutListing: "ಈ ಪಟ್ಟಿಯ ಬಗ್ಗೆ",
-    sellerDetails: "ರೈತ / ಮಾರಾಟಗಾರರ ವಿವರಗಳು",
-
-    // Add Listing Form
-    addNewListing: "ಹೊಸ ಪಟ್ಟಿಯನ್ನು ಸೇರಿಸಿ",
-    listingFormDesc: "ನಿಮ್ಮ ಬೆಳೆಗಳು, ಬೀಜಗಳು ಅಥವಾ ಸಸ್ಯಗಳನ್ನು ಇತರ ರೈತರೊಂದಿಗೆ ಹಂಚಿಕೊಳ್ಳಿ.",
-    cropName: "ಬೆಳೆ / ಬೀಜದ ಹೆಸರು",
-    cropType: "ವಿಧ",
-    price: "ಬೆಲೆ",
-    quantity: "ಪ್ರಮಾಣ",
-    cropLocation: "ಸ್ಥಳ",
-    farmerPhone: "ರೈತರ ಫೋನ್ ಸಂಖ್ಯೆ",
-    phoneHint: "ಖರೀದಿದಾರರು ನಿಮ್ಮನ್ನು ನೇರವಾಗಿ ಸಂಪರ್ಕಿಸಲು ಈ ಸಂಖ್ಯೆಯನ್ನು ಬಳಸುತ್ತಾರೆ.",
-    description: "ವಿವರಣೆ",
-    descPlaceholder: "ನಿಮ್ಮ ಬೆಳೆ, ಗುಣಮಟ್ಟ, ಕೊಯ್ಲು ವಿಧಾನ ಇತ್ಯಾದಿಗಳನ್ನು ವಿವರಿಸಿ.",
-    photos: "ಫೋಟೋಗಳು",
-    tapToAdd: "ನಿಮ್ಮ ಬೆಳೆ ಅಥವಾ ಬೀಜಗಳ ಫೋಟೋಗಳನ್ನು ಸೇರಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ",
-    submitListing: "ಪಟ್ಟಿಯನ್ನು ಸಲ್ಲಿಸಿ",
-    uploadingPhotos: "ಫೋಟೋಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
-    submitting: "ಸಲ್ಲಿಸಲಾಗುತ್ತಿದೆ...",
-
-    // Footer
-    footerDesc: "ಗ್ರಾಮೀಣ ರೈತರಿಗೆ ಡಿಜಿಟಲ್ ಕೃಷಿ ಸೇವೆಗಳೊಂದಿಗೆ ಸಶಕ್ತೀಕರಣ. ಸಾಯ ಎಂಟರ್‌ಪ್ರೈಸಸ್ ಮೂಲಕ",
-    quickLinks: "ತ್ವರಿತ ಲಿಂಕ್‌ಗಳು",
-    contactTitle: "ಸಾಯ ಎಂಟರ್‌ಪ್ರೈಸಸ್",
-    rightsReserved: "© 2026 ಟೆಕ್‌ಫಾರ್ಮ್ ಸಾಯ ಎಂಟರ್‌ಪ್ರೈಸಸ್ ಮೂಲಕ. ಎಲ್ಲಾ ಹಕ್ಕುಗಳನ್ನು ಕಾಯ್ದಿರಿಸಲಾಗಿದೆ.",
-    remove: "ತೆಗೆದುಹಾಕಿ",
-  },
-
-  hi: {
-    // Nav
-    home: "होम",
-    rentMachines: "मशीन किराया",
-    cropsSeeds: "फसल और बीज",
-    login: "लॉगिन",
-    register: "रजिस्टर",
-    marketplace: "फसल बाज़ार",
-
-    // Home hero
-    badge: "ग्रामीण कृषि का डिजिटलीकरण",
-    heroLine1: "स्मार्ट खेती करें",
-    heroLine2: "टेकफार्म",
-    heroDesc: "साया एंटरप्राइजेज से कृषि मशीनें किराए पर लें और किसानों से सीधे फसल व बीज खरीदें या बेचें।",
-    rentBtn: "मशीन किराए पर लें",
-    browseBtn: "फसल देखें",
-
-    // Home services
-    servicesTitle: "हमारी सेवाएं",
-    servicesSubtitle: "आधुनिक खेती के लिए जो भी चाहिए, सब एक जगह।",
-    servicesRent: "मशीन किराया",
-    servicesRentDesc: "दैनिक किराए पर उपलब्ध कृषि मशीनों की विस्तृत श्रृंखला तक पहुंचें।",
-    servicesMarket: "फसल बाज़ार",
-    servicesMarketDesc: "किसानों के साथ सीधे फसल और बीज खरीदें और बेचें।",
-    learnMore: "और जानें",
-
-    // Auth
-    welcomeBack: "आपका स्वागत है",
-    loginSubtitle: "अपने टेकफार्म खाते में लॉगिन करें",
-    email: "ईमेल",
-    password: "पासवर्ड",
-    signIn: "साइन इन",
-    signUp: "साइन अप",
-    fullName: "पूरा नाम",
-    village: "गाँव / सेवा स्थान",
-    userPhone: "फ़ोन नंबर",
-    confirmPassword: "पासवर्ड की पुष्टि करें",
-    dontHaveAccount: "खाता नहीं है?",
-    alreadyHaveAccount: "पहले से ही खाता है?",
-    createAccount: "खाता बनाएँ",
-    joinTechFarm: "एक किसान के रूप में टेकफार्म से जुड़ें",
-    farmer: "किसान",
-    admin: "एडमिन",
-
-    // Dashboards
-    dashboard: "डैशबोर्ड",
-    activeBookings: "सक्रिय बुकिंग",
-    myListings: "मेरी लिस्टिंग",
-    recentBookings: "हाल की बुकिंग",
-    viewAll: "सभी देखें",
-    welcomeFarmer: "स्वागत है",
-    manageDesc: "अपनी मशीन किराए और फसल लिस्टिंग को यहाँ से प्रबंधित करें।",
-    serviceVillage: "सेवा गांव",
-    rentMachine: "मशीन किराए पर लें",
-    rentMachineDesc: "उपलब्ध कृषि मशीनें देखें",
-    addListing: "लिस्टिंग जोड़ें",
-    addListingDesc: "अपनी फसलें, बीज या पौधे बेचें",
-    browseMarket: "बाज़ार ब्राउज़ करें",
-    browseMarketDesc: "अन्य किसानों से फसलें खोजें",
-    myBookings: "मेरी बुकिंग",
-    manageMachines: "मशीनों का प्रबंधन",
-    bookingRequests: "बुकिंग अनुरोध",
-    availabilityCalendar: "उपलब्धता कैलेंडर",
-    marketplaceAdmin: "मार्केटप्लेस एडमिन",
-    adminPanel: "एडमिन पैनल - साया एंटरप्राइजेज",
-    logout: "लॉग आउट",
-    welcomeAdmin: "स्वागत है, एडमिन! 👋",
-    adminDashDesc: "अपने मशीन किराए को प्रबंधित करें और बुकिंग अनुरोधों की निगरानी करें।",
-    loadingDash: "डैशबोर्ड लोड हो रहा है...",
-    totalMachines: "कुल मशीनें",
-    pendingRequests: "लंबित अनुरोध",
-    approvedBookings: "अनुमोदित बुकिंग",
-    availableMachines: "उपलब्ध मशीनें",
-    manageMachinesDesc: "किराये की मशीनें जोड़ें, संपादित करें या निकालें",
-    bookingRequestsDesc: "किसान बुकिंग की समीक्षा और प्रबंधन करें",
-    availabilityCalendarDesc: "मशीन शेड्यूल देखें",
-    recentBookingReq: "हाल के बुकिंग अनुरोध",
-    noBookings: "अभी तक कोई बुकिंग नहीं है।",
-    approve: "अनुमोदित करें",
-    reject: "अस्वीकार करें",
-    addMachine: "+ मशीन जोड़ें",
-    newMachine: "नई मशीन",
-    machineName: "मशीन का नाम",
-    pricePerDay: "प्रति दिन कीमत (₹)",
-    imageUrl: "इमेज यूआरएल",
-    saving: "सहेजा जा रहा है...",
-    saveMachine: "मशीन सहेजें",
-    cancel: "रद्द करें",
-    toggleStatus: "स्थिति बदलें",
-    pendingPayment: "भुगतान लंबित",
-    waitingAdminApproval: "एडमिन अनुमोदन की प्रतीक्षा",
-    needAttention: "ध्यान देने की आवश्यकता है",
-    markCashPaid: "नकद भुगतान घोषित करें",
-    cashPayDue: "नकद भुगतान की अंतिम तिथि",
-    online: "ऑनलाइन",
-    cash: "नकद",
-    all: "सभी",
-    confirmed: "पुष्टि की गई",
-    cancelled: "रद्द",
-    marketplaceAdminDesc: "किसानों द्वारा पोस्ट की गई फसल/बीजों की सूची की निगरानी और प्रबंधन करें।",
-    searchListingsSellers: "सूची या विक्रेताओं को खोजें...",
-    totalListings: "कुल सूचियाँ",
-    activeListings: "सक्रिय सूचियाँ",
-    uniqueSellers: "अद्वितीय विक्रेता",
-    product: "उत्पाद",
-    seller: "विक्रेता",
-
-    // Machines page
-    machinesTitle: "कृषि मशीनें किराए पर लें",
-    machinesSubtitle: "उपलब्ध कृषि मशीनें ब्राउज़ करें और बुक करें।",
-    noMachines: "अभी कोई मशीन उपलब्ध नहीं है।",
-    loadingMachines: "मशीनें लोड हो रही हैं...",
-    bookMachine: "मशीन बुक करें",
-    notAvailable: "उपलब्ध नहीं",
-    available: "✓ उपलब्ध",
-    unavailable: "✗ उपलब्ध नहीं",
-    perDay: "/ दिन",
-    bookingRequested: "✓ बुकिंग अनुरोध किया गया!",
-
-    // Marketplace
-    marketplaceTitle: "फसल और बीज बाज़ार",
-    marketplaceSubtitle: "किसानों के साथ सीधे फसल और बीज खरीदें या बेचें।",
-    searchPlaceholder: "फसल खोजें...",
-    locationPlaceholder: "स्थान से फ़िल्टर करें...",
-    noListings: "कोई लिस्टिंग नहीं मिली।",
-    loadingListings: "लिस्टिंग लोड हो रही है...",
-    contactSeller: "विक्रेता से संपर्क करें",
-    postedBy: "द्वारा पोस्ट किया गया",
-    viewDetails: "विवरण देखें",
-    callFarmer: "किसान को कॉल करें",
-    aboutListing: "इस लिस्टिंग के बारे में",
-    sellerDetails: "किसान / विक्रेता विवरण",
-
-    // Add Listing Form
-    addNewListing: "नई लिस्टिंग जोड़ें",
-    listingFormDesc: "अपनी फसल, बीज या पौधे अन्य किसानों के साथ साझा करें।",
-    cropName: "फसल / बीज का नाम",
-    cropType: "प्रकार",
-    price: "कीमत",
-    quantity: "मात्रा",
-    cropLocation: "स्थान",
-    farmerPhone: "किसान का फोन नंबर",
-    phoneHint: "खरीदार आपसे सीधे संपर्क करने के लिए इस नंबर का उपयोग करेंगे।",
-    description: "विवरण",
-    descPlaceholder: "अपनी फसल, गुणवत्ता, कटाई विधि आदि का वर्णन करें।",
-    photos: "फोटो",
-    tapToAdd: "अपनी फसल या बीजों की फोटो जोड़ने के लिए टैप करें",
-    submitListing: "लिस्टिंग जमा करें",
-    uploadingPhotos: "फोटो अपलोड हो रहे हैं...",
-    submitting: "जमा किया जा रहा है...",
-
-    // Footer
-    footerDesc: "साया एंटरप्राइजेज द्वारा ग्रामीण किसानों को डिजिटल कृषि सेवाओं के साथ सशक्त बनाना।",
-    quickLinks: "त्वरित लिंक",
-    contactTitle: "साया एंटरप्राइजेज",
-    rightsReserved: "© 2026 टेकफार्म साया एंटरप्राइजेज द्वारा। सर्वाधिकार सुरक्षित।",
-    remove: "हटाएं",
-  },
-
-  ml: {
-    // Nav
-    home: "ഹോം",
-    rentMachines: "യന്ത്ര വാടക",
-    cropsSeeds: "വിളകളും വിത്തുകളും",
-    login: "ലോഗിൻ",
-    register: "രജിസ്റ്റർ",
-    marketplace: "വിള മാർക്കറ്റ്",
-
-    // Home hero
-    badge: "ഗ്രാമീണ കൃഷിയുടെ ഡിജിറ്റലൈസേഷൻ",
-    heroLine1: "സ്മാർട്ട് കൃഷി ചെയ്യൂ",
-    heroLine2: "ടെക്‌ഫാം",
-    heroDesc: "സായ എന്റർപ്രൈസസുകളിൽ നിന്ന് കൃഷി യന്ത്രങ്ങൾ വാടകയ്ക്ക് എടുക്കുകയും കർഷകരുമായി നേരിട്ട് വിളകളും വിത്തുകളും കൈമാറുകയും ചെയ്യുക.",
-    rentBtn: "യന്ത്ര വാടക",
-    browseBtn: "വിളകൾ കാണുക",
-
-    // Home services
-    servicesTitle: "ഞങ്ങളുടെ സേവനങ്ങൾ",
-    servicesSubtitle: "ആധുനിക കൃഷിക്ക് ആവശ്യമായ എല്ലാം ഒരിടത്ത്.",
-    servicesRent: "യന്ത്ര വാടക",
-    servicesRentDesc: "ദൈനംദിന വാടകയ്ക്ക് ലഭ്യമായ വിശാലമായ കൃഷി യന്ത്രങ്ങൾ ഉപയോഗിക്കുക.",
-    servicesMarket: "വിള മാർക്കറ്റ്",
-    servicesMarketDesc: "കർഷകരുമായി നേരിട്ട് വിളകളും വിത്തുകളും വാങ്ങുകയും വിൽക്കുകയും ചെയ്യുക.",
-    learnMore: "കൂടുതൽ അറിയുക",
-
-    // Auth
-    welcomeBack: "സ്വാഗതം",
-    loginSubtitle: "നിങ്ങളുടെ ടെക്‌ഫാം അക്കൗണ്ടിലേക്ക് ലോഗിൻ ചെയ്യുക",
-    email: "ഇമെയിൽ",
-    password: "പാസ്‌വേഡ്",
-    signIn: "സൈൻ ഇൻ",
-    signUp: "സൈൻ അപ്പ്",
-    fullName: "പൂർണ്ണമായ പേര്",
-    village: "ഗ്രാമം / സേവന സ്ഥലം",
-    userPhone: "ഫോൺ നമ്പർ",
-    confirmPassword: "പാസ്‌വേഡ് സ്ഥിരീകരിക്കുക",
-    dontHaveAccount: "അക്കൗണ്ട് ഇല്ലേ?",
-    alreadyHaveAccount: "ഇതിനകം ഒരു അക്കൗണ്ട് ഉണ്ടോ?",
-    createAccount: "അക്കൗണ്ട് ഉണ്ടാക്കുക",
-    joinTechFarm: "ഒരു കർഷകനായി ടെക്‌ഫാമിൽ ചേരുക",
-    farmer: "കർഷകൻ",
-    admin: "അഡ്മിൻ",
-
-    // Dashboards
-    dashboard: "ഡാഷ്‌ബോർഡ്",
-    activeBookings: "സജീവ ബുക്കിംഗുകൾ",
-    myListings: "എന്റെ ലിസ്റ്റിംഗുകൾ",
-    recentBookings: "സമീപകാല ബുക്കിംഗുകൾ",
-    viewAll: "എല്ലാം കാണുക",
-    welcomeFarmer: "സ്വാഗതം",
-    manageDesc: "നിങ്ങളുടെ യന്ത്ര വാടകകളും വിള ലിസ്റ്റിംഗുകളും ഇവിടെ നിന്ന് നിയന്ത്രിക്കുക.",
-    serviceVillage: "സേവന ഗ്രാമം",
-    rentMachine: "യന്ത്രം വാടകയ്ക്ക് എടുക്കുക",
-    rentMachineDesc: "ലഭ്യമായ കൃഷി യന്ത്രങ്ങൾ ബ്രൗസ് ചെയ്യുക",
-    addListing: "ലിസ്റ്റിംഗ് ചേർക്കുക",
-    addListingDesc: "നിങ്ങളുടെ വിളകൾ, വിത്തുകൾ അല്ലെങ്കിൽ സസ്യങ്ങൾ വിൽക്കുക",
-    browseMarket: "മാർക്കറ്റ് ബ്രൗസ് ചെയ്യുക",
-    browseMarketDesc: "മറ്റ് കർഷകരിൽ നിന്ന് വിളകൾ കണ്ടെത്തുക",
-    myBookings: "എന്റെ ബുക്കിംഗുകൾ",
-    manageMachines: "യന്ത്രങ്ങൾ നിയന്ത്രിക്കുക",
-    bookingRequests: "ബുക്കിംഗ് അഭ്യർത്ഥനകൾ",
-    availabilityCalendar: "ലഭ്യത കലണ്ടർ",
-    marketplaceAdmin: "മാർക്കറ്റ് പ്ലേസ് അഡ്മിൻ",
-    adminPanel: "അഡ്മിൻ പാനൽ - സായാ എന്റർപ്രൈസസ്",
-    logout: "ലോഗ് ഔട്ട്",
-    welcomeAdmin: "സ്വാഗതം, അഡ്മിൻ! 👋",
-    adminDashDesc: "നിങ്ങളുടെ യന്ത്ര വാടകകൾ നിയന്ത്രിക്കുകയും ബുക്കിംഗ് അഭ്യർത്ഥനകൾ നിരീക്ഷിക്കുകയും ചെയ്യുക.",
-    loadingDash: "ഡാഷ്‌ബോർഡ് ലോഡ് ചെയ്യുന്നു...",
-    totalMachines: "ആകെ യന്ത്രങ്ങൾ",
-    pendingRequests: "തീർച്ചപ്പെടുത്താത്ത അഭ്യർത്ഥനകൾ",
-    approvedBookings: "അംഗീകരിച്ച ബുക്കിംഗുകൾ",
-    availableMachines: "ലഭ്യമായ യന്ത്രങ്ങൾ",
-    manageMachinesDesc: "വാടക യന്ത്രങ്ങൾ ചേർക്കുക, എഡിറ്റ് ചെയ്യുക അല്ലെങ്കിൽ നീക്കം ചെയ്യുക",
-    bookingRequestsDesc: "കർഷകരുടെ ബുക്കിംഗുകൾ അവലോകനം ചെയ്യുകയും നിയന്ത്രിക്കുകയും ചെയ്യുക",
-    availabilityCalendarDesc: "യന്ത്രങ്ങളുടെ ഷെഡ്യൂൾ കാണുക",
-    recentBookingReq: "സമീപകാല ബുക്കിംഗ് അഭ്യർത്ഥനകൾ",
-    noBookings: "ഇതുവരെ ബുക്കിംഗുകൾ ഇല്ല.",
-    approve: "അംഗീകരിക്കുക",
-    reject: "നിരസിക്കുക",
-    addMachine: "+ യന്ത്രം ചേർക്കുക",
-    newMachine: "പുതിയ യന്ത്രം",
-    machineName: "യന്ത്രത്തിന്റെ പേര്",
-    pricePerDay: "പ്രതിദിന വില (₹)",
-    imageUrl: "ചിത്രത്തിന്റെ ലിങ്ക് (URL)",
-    saving: "സേവ് ചെയ്യുന്നു...",
-    saveMachine: "യന്ത്രം സേവ് ചെയ്യുക",
-    cancel: "റദ്ദാക്കുക",
-    toggleStatus: "നില മാറ്റുക",
-    pendingPayment: "പേയ്‌മെന്റ് ബാക്കിയുണ്ട്",
-    waitingAdminApproval: "അഡ്മിൻ അംഗീകാരത്തിനായി കാത്തിരിക്കുന്നു",
-    needAttention: "ശ്രദ്ധിക്കണം",
-    markCashPaid: "പണം നൽകിയതായി അടയാളപ്പെടുത്തുക",
-    cashPayDue: "പണം നൽകേണ്ട അവസാന തിയതി",
-    online: "ഓൺലൈൻ",
-    cash: "നഗദം",
-    all: "എല്ലാം",
-    confirmed: "സ്ഥിരീകരിച്ചു",
-    cancelled: "റദ്ദാക്കി",
-    marketplaceAdminDesc: "കർഷകർ പോസ്റ്റ് ചെയ്ത വിളകളുടെ/വിത്തുകളുടെ ലിസ്റ്റിംഗുകൾ നിരീക്ഷിക്കുകയും നിയന്ത്രിക്കുകയും ചെയ്യുക.",
-    searchListingsSellers: "ലിസ്റ്റിംഗുകൾ അല്ലെങ്കിൽ വിൽപനക്കാരെ തിരയുക...",
-    totalListings: "ആകെ ലിസ്റ്റിംഗുകൾ",
-    activeListings: "സജീവ ലിസ്റ്റിംഗുകൾ",
-    uniqueSellers: "അതുല്യമായ വിൽപനക്കാർ",
-    product: "ഉൽപ്പന്നം",
-    seller: "വിൽപനക്കാരൻ",
-
-    // Machines page
-    machinesTitle: "കൃഷി യന്ത്രങ്ങൾ വാടകയ്ക്ക് എടുക്കുക",
-    machinesSubtitle: "ലഭ്യമായ കൃഷി യന്ത്രങ്ങൾ ബ്രൗസ് ചെയ്ത് ബുക്ക് ചെയ്യുക.",
-    noMachines: "ഇതുവരെ യന്ത്രങ്ങൾ ഒന്നും ലഭ്യമല്ല.",
-    loadingMachines: "യന്ത്രങ്ങൾ ലോഡ് ചെയ്യുന്നു...",
-    bookMachine: "യന്ത്രം ബുക്ക് ചെയ്യുക",
-    notAvailable: "ലഭ്യമല്ല",
-    available: "✓ ലഭ്യമാണ്",
-    unavailable: "✗ ലഭ്യമല്ല",
-    perDay: "/ ദിവസം",
-    bookingRequested: "✓ ബുക്കിംഗ് അഭ്യർഥിച്ചു!",
-
-    // Marketplace
-    marketplaceTitle: "വിളകളും വിത്തുകളും മാർക്കറ്റ്",
-    marketplaceSubtitle: "കർഷകരുമായി നേരിട്ട് വിളകളും വിത്തുകളും വാങ്ങുക അല്ലെങ്കിൽ വിൽക്കുക.",
-    searchPlaceholder: "വിളകൾ തിരയുക...",
-    locationPlaceholder: "സ്ഥലം ഫിൽട്ടർ ചെയ്യുക...",
-    noListings: "ലിസ്റ്റിംഗുകൾ കണ്ടെത്തിയില്ല.",
-    loadingListings: "ലിസ്റ്റിംഗുകൾ ലോഡ് ചെയ്യുന്നു...",
-    contactSeller: "വിൽപ്പനക്കാരനെ ബന്ധപ്പെടുക",
-    postedBy: "പോസ്റ്റ് ചെയ്തത്",
-    viewDetails: "വിവരങ്ങൾ കാണുക",
-    callFarmer: "കർഷകനെ വിളിക്കുക",
-    aboutListing: "ഈ ലിസ്റ്റിംഗിനെക്കുറിച്ച്",
-    sellerDetails: "കർഷകർ / വിൽപ്പനക്കാരുടെ വിവരങ്ങൾ",
-
-    // Add Listing Form
-    addNewListing: "പുതിയ ലിസ്റ്റിംഗ് ചേർക്കുക",
-    listingFormDesc: "നിങ്ങളുടെ വിളയോ വിത്തോ സസ്യമോ മറ്റ് കർഷകരുമായി പങ്കിടുക.",
-    cropName: "വിള / വിത്ത് പേര്",
-    cropType: "ഇനം",
-    price: "വില",
-    quantity: "അളവ്",
-    cropLocation: "സ്ഥലം",
-    farmerPhone: "കർഷകന്റെ ഫോൺ നമ്പർ",
-    phoneHint: "വാങ്ങുന്നവർ നിങ്ങളെ നേരിട്ട് ബന്ധപ്പെടാൻ ഈ നമ്പർ ഉപയോഗിക്കും.",
-    description: "വിവരണം",
-    descPlaceholder: "നിങ്ങളുടെ വിള, ഗുണനിലവാരം, വിളവെടുപ്പ് രീതി തുടങ്ങിയവ വിവരിക്കുക.",
-    photos: "ഫോട്ടോകൾ",
-    tapToAdd: "നിങ്ങളുടെ വിളയുടെയോ വിത്തുകളുടെയോ ഫോട്ടോകൾ ചേർക്കാൻ ടാപ്പ് ചെയ്യുക",
-    submitListing: "ലിസ്റ്റിംഗ് സമർപ്പിക്കുക",
-    uploadingPhotos: "ഫോട്ടോകൾ അപ്‌ലോഡ് ചെയ്യുന്നു...",
-    submitting: "സമർപ്പിക്കുന്നു...",
-
-    // Footer
-    footerDesc: "സായാ എന്റർപ്രൈസസ് വഴി ഗ്രാമീണ കർഷകർക്ക് ഡിജിറ്റൽ കാർഷിക സേവനങ്ങൾ നൽകുന്നു.",
-    quickLinks: "ക്വിക്ക് ലിങ്കുകൾ",
-    contactTitle: "സായാ എന്റർപ്രൈസസ്",
-    rightsReserved: "© 2026 ടെക്‌ഫാം സായാ എന്റർപ്രൈസസ്. എല്ലാ അവകാശങ്ങളും നിക്ഷിപ്തം.",
-    remove: "നീക്കം ചെയ്യുക",
-  },
-};
+const translations: Record<Lang, any> = { en, kn, hi, ml };
 
 const LanguageContext = createContext<any>(null);
 
@@ -650,7 +18,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const saved = localStorage.getItem("tf_lang") as Lang | null;
-      if (saved && ["en", "kn", "hi", "ml"].includes(saved)) {
+      if (saved && translations[saved]) {
         setLangState(saved);
       }
     } catch { }
@@ -658,11 +26,52 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   // Persist to localStorage whenever lang changes
   const setLang = (l: string) => {
-    setLangState(l as Lang);
-    try { localStorage.setItem("tf_lang", l); } catch { }
+    if (translations[l as Lang]) {
+      setLangState(l as Lang);
+      try {
+        localStorage.setItem("tf_lang", l);
+      } catch { }
+    }
   };
 
-  const t = (key: string) => translations[lang][key] || key;
+  /**
+   * t function that supports nested keys like "nav.home"
+   * and falls back to English if key is missing in current language.
+   */
+  const t = (key: string) => {
+    if (!key) return "";
+    const keys = key.split(".");
+    
+    // 1. Try with current language
+    let current: any = translations[lang];
+    for (const k of keys) {
+      if (current && current[k] !== undefined) {
+        current = current[k];
+      } else {
+        current = undefined;
+        break;
+      }
+    }
+
+    if (current !== undefined && typeof current === "string") return current;
+
+    // 2. Fallback to English
+    if (lang !== "en") {
+      let english: any = translations["en"];
+      for (const k of keys) {
+        if (english && english[k] !== undefined) {
+          english = english[k];
+        } else {
+          english = undefined;
+          break;
+        }
+      }
+      if (english !== undefined && typeof english === "string") return english;
+    }
+
+    // 3. Last fallback: return the key itself or the last part of the key
+    return keys[keys.length - 1];
+  };
 
   return (
     <LanguageContext.Provider value={{ lang, setLang, t }}>
@@ -672,5 +81,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useLanguage() {
-  return useContext(LanguageContext);
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error("useLanguage must be used within a LanguageProvider");
+  }
+  return context;
 }

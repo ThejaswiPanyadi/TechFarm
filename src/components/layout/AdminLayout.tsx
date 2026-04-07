@@ -28,12 +28,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const { profile, signOut } = useAuth();
 
   const navItems = [
-    { name: t("dashboard"), path: "/admin", icon: LayoutDashboard },
-    { name: t("manageMachines"), path: "/admin/machines", icon: Tractor },
-    { name: t("bookingRequests"), path: "/admin/bookings", icon: ClipboardList },
-    { name: t("availabilityCalendar"), path: "/admin/calendar", icon: Calendar },
-    { name: t("marketplaceAdmin"), path: "/admin/marketplace", icon: Settings },
-    { name: "User Management", path: "/admin/users", icon: Users },
+    { name: t("nav.dashboard"), path: "/admin", icon: LayoutDashboard },
+    { name: t("nav.manageMachines"), path: "/admin/machines", icon: Tractor },
+    { name: t("nav.bookingRequests"), path: "/admin/bookings", icon: ClipboardList },
+    { name: t("nav.availabilityCalendar"), path: "/admin/calendar", icon: Calendar },
+    { name: t("nav.marketplaceAdmin"), path: "/admin/marketplace", icon: Settings },
+    { name: t("nav.userManagement"), path: "/admin/users", icon: Users },
   ];
 
   const isActive = (path: string) => router.pathname === path;
@@ -80,8 +80,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <Shield className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-semibold">{profile?.full_name ?? t("admin")}</p>
-                <p className="text-sm text-white/70">{t("admin")}</p>
+                <p className="font-semibold">{profile?.full_name ?? t("nav.admin")}</p>
+                <p className="text-sm text-white/70">{t("nav.admin")}</p>
               </div>
             </div>
           </div>
@@ -112,7 +112,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               className="flex items-center gap-3 px-4 py-3 w-full rounded-xl hover:bg-green-700 transition"
             >
               <LogOut className="w-5 h-5" />
-              {t("logout")}
+              {t("nav.logout")}
             </button>
           </div>
 
@@ -133,7 +133,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </button>
 
           <h1 className="text-xl font-bold">
-            {t("adminPanel")}
+            {t("nav.adminPanel")}
           </h1>
 
         </header>

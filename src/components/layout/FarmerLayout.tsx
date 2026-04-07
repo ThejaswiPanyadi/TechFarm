@@ -27,11 +27,11 @@ export default function FarmerLayout({ children }: FarmerLayoutProps) {
   const { profile, signOut } = useAuth();
 
   const navItems = [
-    { name: t("dashboard"), path: "/farmer", icon: LayoutDashboard },
-    { name: t("rentMachines"), path: "/machines", icon: Tractor },
-    { name: t("myBookings"), path: "/farmer/bookings", icon: ClipboardList },
-    { name: t("myListings"), path: "/farmer/listings", icon: ShoppingBasket },
-    { name: t("addListing"), path: "/farmer/add-listing", icon: Plus },
+    { name: t("nav.dashboard"), path: "/farmer", icon: LayoutDashboard },
+    { name: t("nav.rentMachines"), path: "/machines", icon: Tractor },
+    { name: t("booking.myBookingsTitle"), path: "/farmer/bookings", icon: ClipboardList },
+    { name: t("dashboard.myListings"), path: "/farmer/listings", icon: ShoppingBasket },
+    { name: t("marketplace.addNewListing"), path: "/farmer/add-listing", icon: Plus },
   ];
 
   const isActive = (path: string) => router.pathname === path;
@@ -78,8 +78,8 @@ export default function FarmerLayout({ children }: FarmerLayoutProps) {
                 <User className="w-5 h-5" />
               </div>
               <div>
-                <p className="font-semibold">{profile?.full_name ?? t("farmer")}</p>
-                <p className="text-sm text-white/70">{t("farmer")}</p>
+                <p className="font-semibold">{profile?.full_name ?? t("nav.farmer")}</p>
+                <p className="text-sm text-white/70">{t("nav.farmer")}</p>
               </div>
             </div>
           </div>
@@ -110,7 +110,7 @@ export default function FarmerLayout({ children }: FarmerLayoutProps) {
               className="flex items-center gap-3 px-4 py-3 w-full rounded-xl hover:bg-green-700 transition"
             >
               <LogOut className="w-5 h-5" />
-              {t("logout")}
+              {t("nav.logout")}
             </button>
           </div>
 
@@ -130,14 +130,14 @@ export default function FarmerLayout({ children }: FarmerLayoutProps) {
             <Menu />
           </button>
 
-          <h1 className="text-xl font-bold">{t("dashboard")}</h1>
+          <h1 className="text-xl font-bold">{t("nav.dashboard")}</h1>
 
           <div className="ml-auto">
             <Link
               href="/marketplace"
               className="border border-green-700 text-green-700 px-4 py-2 rounded-lg hover:bg-green-700 hover:text-white transition"
             >
-              {t("marketplace")}
+              {t("nav.marketplace")}
             </Link>
           </div>
 

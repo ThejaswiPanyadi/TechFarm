@@ -110,9 +110,9 @@ export default function LoginPage() {
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl font-bold text-center mb-1">{t("welcomeBack")}</h1>
+        <h1 className="text-2xl font-bold text-center mb-1">{t("auth.welcomeBack")}</h1>
         <p className="text-center text-gray-500 mb-6">
-          {t("loginSubtitle")}
+          {t("auth.loginSubtitle")}
         </p>
 
         {/* Role Toggle (actual role will be checked against DB) */}
@@ -125,7 +125,7 @@ export default function LoginPage() {
               : "text-gray-500"
               }`}
           >
-            👤 {t("farmer")}
+            👤 {t("nav.farmer")}
           </button>
           <button
             type="button"
@@ -135,14 +135,14 @@ export default function LoginPage() {
               : "text-gray-500"
               }`}
           >
-            🛡️ {t("admin")}
+            🛡️ {t("nav.admin")}
           </button>
         </div>
 
         {/* Success Message (post-registration) */}
         {justRegistered && (
           <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-3 mb-4">
-            ✅ Successfully registered! Please log in to access your account.
+            ✅ {t("auth.registrationSuccess")}
           </div>
         )}
 
@@ -156,7 +156,7 @@ export default function LoginPage() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-sm font-medium">{t("email")}</label>
+            <label className="text-sm font-medium">{t("auth.email")}</label>
             <input
               type="email"
               placeholder="your@email.com"
@@ -167,7 +167,7 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label className="text-sm font-medium">{t("password")}</label>
+            <label className="text-sm font-medium">{t("auth.password")}</label>
             <input
               type="password"
               placeholder="••••••••"
@@ -182,16 +182,16 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-green-700 text-white py-3 rounded-lg font-semibold hover:bg-green-800 transition disabled:opacity-60"
           >
-            {loading ? "Signing in..." : `${t("signIn")} as ${t(role)}`}
+            {loading ? t("auth.signingIn") : `${t("auth.signInAs")} ${t("nav." + role)}`}
           </button>
         </form>
 
         {/* Sign Up Link - Hidden for admins */}
         {role !== "admin" && (
           <p className="text-center text-sm text-gray-500 mt-6">
-            {t("dontHaveAccount")}{" "}
+            {t("auth.dontHaveAccount")}{" "}
             <Link href={`/register${router.query.redirect ? `?redirect=${router.query.redirect}` : ""}`} className="text-green-700 font-medium hover:underline">
-              {t("signUp")}
+              {t("auth.signUp")}
             </Link>
           </p>
         )}

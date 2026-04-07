@@ -89,9 +89,9 @@ export default function RegisterPage() {
                 </div>
 
                 {/* Title */}
-                <h1 className="text-2xl font-bold text-center mb-1">{t("createAccount")}</h1>
+                <h1 className="text-2xl font-bold text-center mb-1">{t("auth.createAccount")}</h1>
                 <p className="text-center text-gray-500 mb-6">
-                    {t("joinTechFarm")}
+                    {t("auth.joinTechFarm")}
                 </p>
 
                 {/* Error Message */}
@@ -104,7 +104,7 @@ export default function RegisterPage() {
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="text-sm font-medium">{t("fullName")}</label>
+                        <label className="text-sm font-medium">{t("auth.fullName")}</label>
                         <input
                             type="text"
                             placeholder="Ramesh Kumar"
@@ -115,7 +115,7 @@ export default function RegisterPage() {
                         />
                     </div>
                     <div>
-                        <label className="text-sm font-medium">{t("email")}</label>
+                        <label className="text-sm font-medium">{t("auth.email")}</label>
                         <input
                             type="email"
                             placeholder="your@email.com"
@@ -126,7 +126,7 @@ export default function RegisterPage() {
                         />
                     </div>
                     <div>
-                        <label className="text-sm font-medium">{t("password")}</label>
+                        <label className="text-sm font-medium">{t("auth.password")}</label>
                         <input
                             type="password"
                             placeholder="Min 6 characters"
@@ -138,7 +138,7 @@ export default function RegisterPage() {
                         />
                     </div>
                     <div>
-                        <label className="text-sm font-medium">{t("userPhone")}</label>
+                        <label className="text-sm font-medium">{t("auth.userPhone")}</label>
                         <input
                             type="tel"
                             placeholder="+91 98765 43210"
@@ -148,14 +148,14 @@ export default function RegisterPage() {
                         />
                     </div>
                     <div>
-                        <label className="text-sm font-medium">{t("village")}</label>
+                        <label className="text-sm font-medium">{t("auth.village")}</label>
                         <select
                             className="w-full mt-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-600 bg-white"
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
                             required
                         >
-                            <option value="">— {t("village")} —</option>
+                            <option value="">— {t("auth.village")} —</option>
                             <option value="Kadaba">Kadaba</option>
                             <option value="Nelyadi">Nelyadi</option>
                             <option value="Kaniyoor">Kaniyoor</option>
@@ -170,7 +170,7 @@ export default function RegisterPage() {
                             <option value="Kutrupadi">Kutrupadi</option>
                         </select>
                         <p className="text-xs text-gray-500 mt-1.5">
-                            <b> ℹ️ Machine rental service is available only in Kadaba and Sullia taluk villages.</b>
+                            <b> ℹ️ {t("auth.machineRentalServiceAreaHint")}</b>
                         </p>
                     </div>
                     <button
@@ -178,15 +178,15 @@ export default function RegisterPage() {
                         disabled={loading}
                         className="w-full bg-green-700 text-white py-3 rounded-lg font-semibold hover:bg-green-800 transition disabled:opacity-60"
                     >
-                        {loading ? "Creating account..." : t("createAccount")}
+                        {loading ? t("auth.creatingAccount") : t("auth.createAccount")}
                     </button>
                 </form>
 
                 {/* Login Link */}
                 <p className="text-center text-sm text-gray-500 mt-6">
-                    {t("alreadyHaveAccount")}{" "}
+                    {t("auth.alreadyHaveAccount")}{" "}
                     <Link href={`/login${router.query.redirect ? `?redirect=${router.query.redirect}` : ""}`} className="text-green-700 font-medium hover:underline">
-                        {t("login")}
+                        {t("nav.login")}
                     </Link>
                 </p>
             </div>

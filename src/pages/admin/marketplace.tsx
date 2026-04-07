@@ -29,7 +29,7 @@ export default function MarketplaceAdmin() {
   }
 
   async function handleDelete(id: string) {
-    if (!confirm(t("remove") + "?")) return;
+    if (!confirm(`${t("common.remove")}?`)) return;
     await deleteListing(id);
     setListings((prev) => prev.filter((l) => l.id !== id));
   }
@@ -43,13 +43,13 @@ export default function MarketplaceAdmin() {
   return (
     <AdminLayout>
       <div className="p-6">
-        <h2 className="text-2xl font-bold mb-2">{t("marketplaceAdmin")}</h2>
-        <p className="text-gray-600 mb-6">{t("marketplaceAdminDesc")}</p>
+        <h2 className="text-2xl font-bold mb-2">{t("marketplace.marketplaceAdmin")}</h2>
+        <p className="text-gray-600 mb-6">{t("marketplace.marketplaceAdminDesc")}</p>
 
         {/* Search */}
         <div className="relative mb-6 max-w-lg">
           <Search className="absolute left-3 top-3 text-gray-400" size={18} />
-          <input type="text" placeholder={t("searchListingsSellers")}
+          <input type="text" placeholder={t("marketplace.searchListingsSellers")}
             className="w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
             value={search} onChange={(e) => setSearch(e.target.value)} />
         </div>
@@ -58,39 +58,39 @@ export default function MarketplaceAdmin() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white p-6 rounded-xl shadow">
             <p className="text-3xl font-bold">{listings.length}</p>
-            <p className="text-gray-600">{t("totalListings")}</p>
+            <p className="text-gray-600">{t("marketplace.totalListings")}</p>
           </div>
           <div className="bg-white p-6 rounded-xl shadow">
             <p className="text-3xl font-bold">{listings.filter((l) => l.status === "Active").length}</p>
-            <p className="text-gray-600">{t("activeListings")}</p>
+            <p className="text-gray-600">{t("marketplace.activeListings")}</p>
           </div>
           <div className="bg-white p-6 rounded-xl shadow">
             <p className="text-3xl font-bold">
               {new Set(listings.map((l) => l.farmer_id)).size}
             </p>
-            <p className="text-gray-600">{t("uniqueSellers")}</p>
+            <p className="text-gray-600">{t("marketplace.uniqueSellers")}</p>
           </div>
         </div>
 
         {/* Table */}
         {loading ? (
-          <div className="text-center py-20 text-gray-400">{t("loadingDash")}</div>
+          <div className="text-center py-20 text-gray-400">{t("common.loading")}</div>
         ) : (
           <div className="bg-white rounded-xl shadow overflow-x-auto">
             <table className="w-full text-left">
               <thead className="bg-gray-50 border-b">
                 <tr>
-                  <th className="p-4">{t("product")}</th>
-                  <th className="p-4">{t("seller")}</th>
-                  <th className="p-4">{t("cropLocation")}</th>
-                  <th className="p-4">{t("price")}</th>
-                  <th className="p-4">{t("status")}</th>
-                  <th className="p-4 text-center">{t("actions")}</th>
+                  <th className="p-4">{t("marketplace.product")}</th>
+                  <th className="p-4">{t("marketplace.seller")}</th>
+                  <th className="p-4">{t("marketplace.cropLocation")}</th>
+                  <th className="p-4">{t("marketplace.price")}</th>
+                  <th className="p-4">{t("common.status")}</th>
+                  <th className="p-4 text-center">{t("common.actions")}</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={6} className="text-center py-10 text-gray-400">{t("noBookings")}</td></tr>
+                  <tr><td colSpan={6} className="text-center py-10 text-gray-400">{t("marketplace.noListings")}</td></tr>
                 ) : filtered.map((item) => (
                   <tr key={item.id} className="border-b hover:bg-gray-50">
                     <td className="p-4">

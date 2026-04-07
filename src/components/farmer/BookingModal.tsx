@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { createBooking, getProfile } from "@/lib/db";
+import { createBooking, getProfile, getUserActiveBooking } from "@/lib/db";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Props {
   machineId: string;
@@ -15,6 +16,7 @@ type CustomerMode = "profile" | "manual";
 
 export default function BookingModal({ machineId, machineName, price, onClose, onBooked }: Props) {
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   // Wizard step
   const [step, setStep] = useState<Step>("customer");
@@ -81,6 +83,16 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
     setLoading(true);
     setError(null);
     try {
+      // Re-verify status just in case
+      const active = await getUserActiveBooking(user.id);
+      if (active) {
+          const isOverdue = active.status === "Overdue" || active.status === "Late";
+          if (isOverdue) {
+              throw new Error("You have not returned your previous machine. Please return it to continue booking.");
+          }
+          throw new Error("You already have an active booking. Please complete or return the current machine before booking another.");
+      }
+
       const now = new Date();
       const cashDeadline = new Date(now.getTime() + 5 * 60 * 60 * 1000).toISOString();
 
@@ -112,7 +124,7 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
 
   // ─── STEP INDICATORS ──────────────────────────────────────
   const steps: Step[] = ["customer", "dates", "payment"];
-  const stepLabels = { customer: "Customer", dates: "Dates", payment: "Payment" };
+  const stepLabels = { customer: t("booking.customerDetails"), dates: t("booking.toDate"), payment: t("booking.paymentChoice") };
   const currentStepIdx = steps.indexOf(step);
 
   return (
@@ -120,7 +132,7 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
       <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="px-6 pt-6 pb-4 border-b">
-          <h2 className="text-xl font-bold">Book {machineName}</h2>
+          <h2 className="text-xl font-bold">{t("machines.bookMachine")} {machineName}</h2>
           {/* Step pills */}
           <div className="flex items-center gap-2 mt-3">
             {steps.map((s, i) => (
@@ -152,7 +164,7 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
           {/* ─── STEP 1: Customer Details ──────────────────── */}
           {step === "customer" && (
             <div className="space-y-4">
-              <p className="text-sm text-gray-500">How would you like to fill customer details?</p>
+              <p className="text-sm text-gray-500 font-medium">{t("booking.customerInfoMode")}</p>
 
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -163,8 +175,8 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
                     }`}
                 >
                   <div className="text-lg mb-1">👤</div>
-                  <div className="font-medium text-sm">Use my profile</div>
-                  <div className="text-xs text-gray-500 mt-0.5">Auto-fill from account</div>
+                  <div className="font-medium text-sm">{t("booking.useProfile")}</div>
+                  <div className="text-xs text-gray-500 mt-0.5">{t("booking.autoFillDesc")}</div>
                 </button>
 
                 <button
@@ -175,39 +187,39 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
                     }`}
                 >
                   <div className="text-lg mb-1">✏️</div>
-                  <div className="font-medium text-sm">Enter manually</div>
-                  <div className="text-xs text-gray-500 mt-0.5">Type in new details</div>
+                  <div className="font-medium text-sm">{t("booking.manualEntry")}</div>
+                  <div className="text-xs text-gray-500 mt-0.5">{t("booking.typeNewDetails")}</div>
                 </button>
               </div>
 
               {customerMode === "profile" && (
                 <div className="bg-gray-50 rounded-xl p-4 space-y-3">
                   {profileLoading ? (
-                    <p className="text-sm text-gray-400">Loading profile...</p>
+                    <p className="text-sm text-gray-400">{t("booking.profileLoading")}</p>
                   ) : profileData ? (
                     <>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-gray-500 w-20">Name</span>
-                        <span className="text-sm">{profileData.full_name || <span className="text-gray-400 italic">Not set</span>}</span>
+                        <span className="text-xs font-medium text-gray-500 w-20">{t("booking.name")}</span>
+                        <span className="text-sm">{profileData.full_name || <span className="text-gray-400 italic">{t("booking.notSet")}</span>}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-gray-500 w-20">Phone</span>
-                        <span className="text-sm">{profileData.phone || <span className="text-gray-400 italic">Not set</span>}</span>
+                        <span className="text-xs font-medium text-gray-500 w-20">{t("booking.phone")}</span>
+                        <span className="text-sm">{profileData.phone || <span className="text-gray-400 italic">{t("booking.notSet")}</span>}</span>
                       </div>
                       <div className="space-y-1.5">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-gray-500 w-20">Village</span>
-                          <span className="text-sm text-gray-700">{profileData.location || <span className="text-gray-400 italic">Not set</span>}</span>
+                          <span className="text-xs font-medium text-gray-500 w-20">{t("booking.village")}</span>
+                          <span className="text-sm text-gray-700">{profileData.location || <span className="text-gray-400 italic">{t("booking.notSet")}</span>}</span>
                         </div>
                         {/* Optional location override */}
                         <div>
-                          <label className="text-xs text-gray-500 block mb-1">Override village for this booking (optional)</label>
+                          <label className="text-xs text-gray-500 block mb-1">{t("booking.locationOverride")}</label>
                           <select
                             value={locationOverride}
                             onChange={(e) => setLocationOverride(e.target.value)}
                             className="w-full border rounded-lg p-2 text-sm bg-white"
                           >
-                            <option value="">— Same as profile ({profileData.location || "not set"}) —</option>
+                            <option value="">— {t("booking.sameAsProfile")} ({profileData.location || t("booking.notSet")}) —</option>
                             <option value="Kadaba">Kadaba</option>
                             <option value="Nelyadi">Nelyadi</option>
                             <option value="Kaniyoor">Kaniyoor</option>
@@ -224,11 +236,11 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
                         </div>
                       </div>
                       {(!profileData.phone || !profileData.location) && (
-                        <p className="text-xs text-amber-600 mt-2">⚠ Some profile fields are empty. Consider entering details manually.</p>
+                        <p className="text-xs text-amber-600 mt-2">⚠ {t("booking.missingFieldsWarning")}</p>
                       )}
                     </>
                   ) : (
-                    <p className="text-sm text-gray-400">Could not load profile.</p>
+                    <p className="text-sm text-gray-400">{t("auth.registerError")}</p>
                   )}
                 </div>
               )}
@@ -236,17 +248,17 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
               {customerMode === "manual" && (
                 <div className="space-y-3">
                   <div>
-                    <label className="text-sm font-medium block mb-1">Name *</label>
+                    <label className="text-sm font-medium block mb-1">{t("auth.fullName")} *</label>
                     <input
                       type="text"
                       value={manualName}
                       onChange={(e) => setManualName(e.target.value)}
-                      placeholder="Full name"
+                      placeholder={t("auth.fullName")}
                       className="w-full border rounded-lg p-3 text-sm"
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium block mb-1">Phone Number *</label>
+                    <label className="text-sm font-medium block mb-1">{t("auth.userPhone")} *</label>
                     <input
                       type="tel"
                       value={manualPhone}
@@ -256,13 +268,13 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium block mb-1">Location *</label>
+                    <label className="text-sm font-medium block mb-1">{t("booking.village")} *</label>
                     <select
                       value={manualLocation}
                       onChange={(e) => setManualLocation(e.target.value)}
                       className="w-full border rounded-lg p-3 text-sm bg-white"
                     >
-                      <option value="">— Select your village —</option>
+                      <option value="">— {t("booking.selectVillage")} —</option>
                       <option value="Kadaba">Kadaba</option>
                       <option value="Nelyadi">Nelyadi</option>
                       <option value="Kaniyoor">Kaniyoor</option>
@@ -276,15 +288,15 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
                       <option value="Ballya Kutrupadi">Ballya Kutrupadi</option>
                     </select>
                     <p className="text-xs text-gray-500 mt-1.5">
-                      ℹ️ Machine rental service is available only in Kadaba and Sullia taluk villages.
+                      ℹ️ {t("booking.serviceAreaHint")}
                     </p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium block mb-1">Notes (optional)</label>
+                    <label className="text-sm font-medium block mb-1">{t("booking.notes")}</label>
                     <textarea
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Any special requirements..."
+                      placeholder={t("booking.notesPlaceholder")}
                       rows={2}
                       className="w-full border rounded-lg p-3 text-sm resize-none"
                     />
@@ -295,11 +307,11 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
               {/* notes for profile mode too */}
               {customerMode === "profile" && (
                 <div>
-                  <label className="text-sm font-medium block mb-1">Notes (optional)</label>
+                  <label className="text-sm font-medium block mb-1">{t("booking.notes")}</label>
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Any special requirements..."
+                    placeholder={t("booking.notesPlaceholder")}
                     rows={2}
                     className="w-full border rounded-lg p-3 text-sm resize-none"
                   />
@@ -308,14 +320,14 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
 
               <div className="flex gap-3 pt-2">
                 <button onClick={onClose} className="w-full border rounded-lg py-2.5 text-sm hover:bg-gray-50">
-                  Cancel
+                  {t("common.cancel")}
                 </button>
                 <button
                   disabled={!step1Valid}
                   onClick={() => setStep("dates")}
                   className="w-full bg-green-700 text-white rounded-lg py-2.5 text-sm hover:bg-green-800 disabled:opacity-50"
                 >
-                  Next →
+                  {t("booking.next")}
                 </button>
               </div>
             </div>
@@ -325,7 +337,7 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
           {step === "dates" && (
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium block mb-1">From Date *</label>
+                <label className="text-sm font-medium block mb-1">{t("booking.fromDate")} *</label>
                 <input
                   type="date"
                   className="w-full border rounded-lg p-3"
@@ -335,7 +347,7 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
                 />
               </div>
               <div>
-                <label className="text-sm font-medium block mb-1">To Date *</label>
+                <label className="text-sm font-medium block mb-1">{t("booking.toDate")} *</label>
                 <input
                   type="date"
                   className="w-full border rounded-lg p-3"
@@ -347,23 +359,23 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
 
               {days > 0 && (
                 <div className="bg-green-50 border border-green-100 rounded-xl p-4 text-sm space-y-1">
-                  <p className="text-gray-600">Price per day: <span className="font-medium">₹{price}</span></p>
-                  <p className="text-gray-600">Duration: <span className="font-medium">{days} day(s)</span></p>
+                  <p className="text-gray-600 font-medium">{t("booking.pricePerDay")}: <span className="font-bold">₹{price}</span></p>
+                  <p className="text-gray-600 font-medium">{t("booking.duration")}: <span className="font-bold">{days} day(s)</span></p>
                   <hr className="my-2 border-green-200" />
-                  <p className="font-bold text-green-700 text-base">Total: ₹{total}</p>
+                  <p className="font-bold text-green-700 text-base">{t("booking.total")}: ₹{total}</p>
                 </div>
               )}
 
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setStep("customer")} className="w-full border rounded-lg py-2.5 text-sm hover:bg-gray-50">
-                  ← Back
+                  {t("booking.back")}
                 </button>
                 <button
                   disabled={!step2Valid}
                   onClick={() => setStep("payment")}
                   className="w-full bg-green-700 text-white rounded-lg py-2.5 text-sm hover:bg-green-800 disabled:opacity-50"
                 >
-                  Next →
+                  {t("booking.next")}
                 </button>
               </div>
             </div>
@@ -372,7 +384,7 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
           {/* ─── STEP 3: Payment ──────────────────────────── */}
           {step === "payment" && (
             <div className="space-y-4">
-              <p className="text-sm text-gray-500 font-medium">Choose how you want to pay</p>
+              <p className="text-sm text-gray-500 font-medium">{t("booking.paymentChoice")}</p>
 
               <div className="grid grid-cols-2 gap-3">
                 <button
@@ -381,8 +393,8 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
                     }`}
                 >
                   <div className="text-2xl mb-1">🏪</div>
-                  <div className="font-medium text-sm">Cash at Shop</div>
-                  <div className="text-xs text-gray-500 mt-0.5">Pay in-person within 5 hrs</div>
+                  <div className="font-medium text-sm">{t("booking.cashAtShop")}</div>
+                  <div className="text-xs text-gray-500 mt-0.5">{t("booking.payInPerson")}</div>
                 </button>
 
                 <button
@@ -391,16 +403,16 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
                     }`}
                 >
                   <div className="text-2xl mb-1">📱</div>
-                  <div className="font-medium text-sm">Online Payment</div>
-                  <div className="text-xs text-gray-500 mt-0.5">Pay via UPI / QR code</div>
+                  <div className="font-medium text-sm">{t("booking.onlinePayment")}</div>
+                  <div className="text-xs text-gray-500 mt-0.5">{t("booking.payViaUpi")}</div>
                 </button>
               </div>
 
               {/* Cash info */}
               {payment === "cash" && (
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800 space-y-1">
-                  <p className="font-semibold">⏱ Pay within 5 hours</p>
-                  <p>Please visit the shop and complete your cash payment within 5 hours of booking. If payment is not received, your booking will be automatically cancelled.</p>
+                  <p className="font-bold">⏱ {t("booking.cashPayDue")}</p>
+                  <p>{t("booking.cashDeadlineInfo")}</p>
                 </div>
               )}
 
@@ -408,13 +420,13 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
               {payment === "online" && (
                 <div className="space-y-3">
                   <div className="bg-gray-50 rounded-xl p-4 text-center">
-                    <p className="text-sm font-medium text-gray-700 mb-3">Scan QR to pay ₹{total}</p>
+                    <p className="text-sm font-bold text-gray-700 mb-3">{t("booking.scanQr")} ₹{total}</p>
                     <img
                       src="/myqr-code.jpg"
                       alt="Admin Payment QR"
                       className="w-48 h-48 object-contain mx-auto rounded-lg border"
                     />
-                    <p className="text-xs text-gray-500 mt-3">After paying, click the button below to confirm</p>
+                    <p className="text-xs text-gray-500 mt-3">{t("booking.readyToSubmit")}</p>
                   </div>
 
                   <button
@@ -424,24 +436,24 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
                       : "bg-blue-600 text-white hover:bg-blue-700"
                       }`}
                   >
-                    {qrConfirmed ? "✓ Payment Confirmed — Ready to Submit" : "I Have Paid"}
+                    {qrConfirmed ? t("booking.readyToSubmit") : t("booking.confirmPaid")}
                   </button>
                 </div>
               )}
 
               {/* Summary */}
-              <div className="bg-gray-50 rounded-xl p-4 text-sm space-y-1">
-                <p className="font-semibold text-gray-700 mb-2">Booking Summary</p>
+              <div className="bg-gray-50 rounded-xl p-4 text-sm space-y-1 font-medium">
+                <p className="font-bold text-gray-700 mb-2">{t("booking.summary")}</p>
                 <p>👤 {customerName || "—"}</p>
                 <p>📞 {customerPhone || "—"}</p>
                 <p>📍 {customerLocation || "—"}</p>
                 <p>📅 {fromDate} → {toDate} ({days} day{days !== 1 ? "s" : ""})</p>
-                <p className="font-bold text-green-700 mt-2">Total: ₹{total}</p>
+                <p className="font-bold text-green-700 mt-2">{t("booking.total")}: ₹{total}</p>
               </div>
 
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setStep("dates")} className="w-full border rounded-lg py-2.5 text-sm hover:bg-gray-50">
-                  ← Back
+                  {t("booking.back")}
                 </button>
                 <button
                   onClick={handleSubmit}
@@ -449,10 +461,10 @@ export default function BookingModal({ machineId, machineName, price, onClose, o
                   className="w-full bg-green-700 text-white rounded-lg py-2.5 text-sm hover:bg-green-800 disabled:opacity-50"
                 >
                   {loading
-                    ? "Submitting..."
+                    ? t("booking.submitting")
                     : payment === "cash"
-                      ? "Confirm Booking"
-                      : "Submit & Notify Admin"}
+                      ? t("booking.confirmBooking")
+                      : t("booking.submitNotifyAdmin")}
                 </button>
               </div>
             </div>

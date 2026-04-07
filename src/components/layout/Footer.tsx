@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Leaf, Phone, Mail, MapPin } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { SHOP_PHONE, SHOP_EMAIL, SHOP_LOCATION } from "@/lib/config";
 
 export function Footer() {
   const { t } = useLanguage();
@@ -19,20 +20,20 @@ export function Footer() {
               <span className="text-2xl font-bold text-white">TechFarm</span>
             </Link>
             <p className="text-white/80 text-lg">
-              <b>{t("footerDesc")}</b>
+              <b>{t("footer.desc")}</b>
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-xl font-bold mb-4 text-white">{t("quickLinks")}</h3>
+            <h3 className="text-xl font-bold mb-4 text-white">{t("footer.quickLinks")}</h3>
             <ul className="space-y-3 text-lg">
               <li>
                 <Link
                   href="/machines"
                   className="text-white/80 hover:text-white transition-colors"
                 >
-                  {t("rentMachines")}
+                  {t("nav.rentMachines")}
                 </Link>
               </li>
               <li>
@@ -40,7 +41,7 @@ export function Footer() {
                   href="/marketplace"
                   className="text-white/80 hover:text-white transition-colors"
                 >
-                  {t("marketplace")}
+                  {t("nav.marketplace")}
                 </Link>
               </li>
               <li>
@@ -48,7 +49,7 @@ export function Footer() {
                   href="/login"
                   className="text-white/80 hover:text-white transition-colors"
                 >
-                  {t("login")}
+                  {t("nav.login")}
                 </Link>
               </li>
             </ul>
@@ -56,19 +57,19 @@ export function Footer() {
 
           {/* Contact - Saya Enterprises */}
           <div>
-            <h3 className="text-xl font-bold mb-4 text-white">{t("contactTitle")}</h3>
+            <h3 className="text-xl font-bold mb-4 text-white">{t("footer.contactTitle")}</h3>
             <ul className="space-y-3 text-lg">
               <li className="flex items-center gap-3 text-white/80">
                 <Phone className="w-5 h-5 text-white" />
-                <span>+91 9164996224</span>
+                <a href={`tel:${SHOP_PHONE}`} className="hover:text-white transition">{SHOP_PHONE}</a>
               </li>
               <li className="flex items-center gap-3 text-white/80">
                 <Mail className="w-5 h-5 text-white" />
-                <span>info@sayaenterprises.com</span>
+                <a href={`mailto:${SHOP_EMAIL}`} className="hover:text-white transition">{SHOP_EMAIL}</a>
               </li>
               <li className="flex items-center gap-3 text-white/80">
                 <MapPin className="w-5 h-5 text-white" />
-                <span>Kadaba DK</span>
+                <span>{SHOP_LOCATION}</span>
               </li>
             </ul>
           </div>
@@ -78,7 +79,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-white/20 mt-8 pt-8 text-center">
           <p className="text-base text-white/70">
-            {t("rightsReserved")}
+            {t("footer.rightsReserved")}
           </p>
         </div>
       </div>

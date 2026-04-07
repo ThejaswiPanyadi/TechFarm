@@ -40,12 +40,79 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             query = query.eq("farmer_id", user.id);
         }
 
-        const { data, error } = await query.order("created_at", { ascending: true });
+        const { data: rawData, error } = await query.order("created_at", { ascending: true });
         if (error) return res.status(500).json({ error: error.message });
+
+        // --- AUTOMATED OVERDUE DETECTION & NOTIFICATION TRIGGER ---
+        const now = new Date();
+        const data = await Promise.all((rawData || []).map(async (booking) => {
+            const isTracking = booking.status === "Confirmed" || booking.status === "Approved";
+            const toDate = new Date(booking.to_date);
+            // Consider overdue after midnight of toDate
+            toDate.setHours(23, 59, 59, 999);
+
+            if (isTracking && now > toDate) {
+                const updates: any = { status: "Overdue" };
+                
+                // Triggers "notification" flag once
+                if (!booking.notification_status) {
+                    updates.notification_status = true;
+                    // In real production, send SMS/Email here
+                }
+
+                const { data: updated } = await supabaseAdmin
+                    .from("bookings")
+                    .update(updates)
+                    .eq("id", booking.id)
+                    .select("*, machines(name, location, price_per_day), profiles(full_name)")
+                    .single();
+                
+                return updated || booking;
+            }
+            return booking;
+        }));
+
         return res.status(200).json(data);
     }
 
     if (req.method === "POST") {
+        // --- RESTRICTION CHECK ---
+        // Farmers can only have one active booking.
+        // Block if they have any booking that is NOT Completed or Cancelled.
+        const { data: existingBookings, error: checkError } = await supabaseAdmin
+            .from("bookings")
+            .select("status")
+            .eq("farmer_id", user.id)
+            .in("status", [
+                "Pending Payment",
+                "Waiting Admin Approval",
+                "Approved",
+                "Confirmed",
+                "Overdue",
+                "Late",
+                "Pending",
+                "Active"
+            ]);
+
+        if (checkError) return res.status(500).json({ error: checkError.message });
+
+        if (existingBookings && existingBookings.length > 0) {
+            const hasOverdue = existingBookings.some(b => 
+                b.status === "Overdue" || b.status === "Late"
+            );
+
+            if (hasOverdue) {
+                return res.status(403).json({ 
+                    error: "You have not returned your previous machine. Please return it to continue booking." 
+                });
+            }
+
+            return res.status(403).json({ 
+                error: "You already have an active booking. Please complete or return the current machine before booking another." 
+            });
+        }
+        // --- END RESTRICTION CHECK ---
+
         // Ensure farmer_id matches the authenticated user if they aren't admin
         const bookingData = { ...req.body };
         if (user.role !== "admin") {
@@ -93,7 +160,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const lateDays = Math.max(0, Math.round((today.getTime() - toDate.getTime()) / msPerDay));
             const pricePerDay: number = booking.machines?.price_per_day ?? 0;
             const lateFee = lateDays > 0 ? lateDays * pricePerDay : 0;
-            const newStatus = lateDays > 0 ? "Late Return" : "Completed";
+            const newStatus = "Returned";
 
             const { data: updatedBooking, error: updateError } = await supabaseAdmin
                 .from("bookings")

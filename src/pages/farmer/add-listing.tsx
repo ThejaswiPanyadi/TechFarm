@@ -112,8 +112,8 @@ export default function AddListing() {
       {/* Centered container */}
       <div className="flex justify-center px-4 py-6">
         <div className="w-full max-w-xl bg-white rounded-2xl shadow-md p-8">
-          <h1 className="text-2xl font-bold mb-1">{t("addNewListing")}</h1>
-          <p className="text-sm text-gray-500 mb-6">{t("listingFormDesc")}</p>
+          <h1 className="text-2xl font-bold mb-1">{t("marketplace.addNewListing")}</h1>
+          <p className="text-sm text-gray-500 mb-6">{t("marketplace.listingFormDesc")}</p>
 
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-5">
@@ -140,15 +140,15 @@ export default function AddListing() {
 
             {/* Type */}
             <div>
-              <label className="block text-sm font-medium mb-1.5">{t("cropType")}</label>
+              <label className="block text-sm font-medium mb-1.5">{t("marketplace.cropType")}</label>
               <select
                 className="w-full border rounded-xl px-4 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-green-500 transition"
                 value={form.type}
                 onChange={(e) => setForm({ ...form, type: e.target.value })}
               >
-                <option value="Crop">Crop</option>
-                <option value="Seed">Seed</option>
-                <option value="Plant">Plant</option>
+                <option value="Crop">{t("marketplace.crop")}</option>
+                <option value="Seed">{t("marketplace.seed")}</option>
+                <option value="Plant">{t("marketplace.plant")}</option>
               </select>
             </div>
 
@@ -156,7 +156,7 @@ export default function AddListing() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1.5">
-                  {t("price")} <span className="text-red-500">*</span>
+                  {t("marketplace.price")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -168,7 +168,7 @@ export default function AddListing() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5">{t("quantity")}</label>
+                <label className="block text-sm font-medium mb-1.5">{t("marketplace.quantity")}</label>
                 <input
                   type="text"
                   className="w-full border rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
@@ -215,11 +215,11 @@ export default function AddListing() {
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium mb-1.5">{t("description")}</label>
+              <label className="block text-sm font-medium mb-1.5">{t("marketplace.description")}</label>
               <textarea
                 className="w-full border rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-green-500 transition resize-none"
                 rows={3}
-                placeholder={t("descPlaceholder")}
+                placeholder={t("marketplace.descPlaceholder")}
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
@@ -256,8 +256,8 @@ export default function AddListing() {
                 <ImagePlus className="w-5 h-5" />
                 <span>
                   {previews.length === 0
-                    ? t("tapToAdd")
-                    : `${previews.length} photo${previews.length > 1 ? "s" : ""} selected — tap to add more`}
+                    ? t("marketplace.tapToAdd")
+                    : `${previews.length} ${t("marketplace.tapToAddMore")}`}
                 </span>
               </button>
               <input
@@ -277,7 +277,7 @@ export default function AddListing() {
               disabled={loading || uploading}
               className="w-full bg-green-600 text-white py-3 rounded-xl font-semibold hover:bg-green-700 transition disabled:opacity-60"
             >
-              {uploading ? t("uploadingPhotos") : loading ? t("submitting") : t("submitListing")}
+              {uploading ? t("marketplace.uploadingPhotos") : loading ? t("marketplace.submitting") : t("marketplace.submitListing")}
             </button>
           </form>
         </div>

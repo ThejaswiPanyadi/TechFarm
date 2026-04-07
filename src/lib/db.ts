@@ -58,8 +58,31 @@ export async function getAllBookings() {
 }
 
 export async function getFarmerBookings(farmerId: string) {
-    // Note: API already filters by farmer_id if not admin
+// Note: API already filters by farmer_id if not admin
     return bookingsApi("GET");
+}
+
+/** Get user's active booking status based on specific active statuses. */
+export async function getUserActiveBooking(farmerId: string) {
+    const { data, error } = await supabase
+        .from("bookings")
+        .select("id, status")
+        .eq("farmer_id", farmerId)
+        .in("status", [
+            "Pending Payment",
+            "Waiting Admin Approval",
+            "Approved",
+            "Confirmed",
+            "Overdue",
+            "Late",
+            "Pending",
+            "Active"
+        ])
+        .limit(1)
+        .maybeSingle();
+
+    if (error) throw error;
+    return data;
 }
 
 export async function getProfile(userId: string) {
@@ -190,7 +213,16 @@ export async function getFarmerStats(farmerId: string) {
     ]);
 
     return {
-        activeBookings: bookings.data?.filter((b) => b.status === "Approved").length ?? 0,
+        activeBookings: bookings.data?.filter((b) => [
+            "Pending Payment",
+            "Waiting Admin Approval",
+            "Approved",
+            "Confirmed",
+            "Overdue",
+            "Late",
+            "Pending",
+            "Active"
+        ].includes(b.status)).length ?? 0,
         myListings: listings.data?.length ?? 0,
     };
 }

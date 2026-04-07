@@ -45,45 +45,45 @@ export default function AdminDashboard() {
     <AdminLayout>
       {/* Welcome Section */}
       <div className="mb-8">
-        <h2 className="text-3xl font-bold mb-2">{t("welcomeAdmin")}</h2>
-        <p className="text-gray-600">{t("adminDashDesc")}</p>
+        <h2 className="text-3xl font-bold mb-2">{t("dashboard.welcomeAdmin")}</h2>
+        <p className="text-gray-600">{t("dashboard.adminDashDesc")}</p>
       </div>
 
       {loading ? (
-        <div className="text-gray-400 text-center py-20">{t("loadingDash")}</div>
+        <div className="text-gray-400 text-center py-20">{t("dashboard.loading")}</div>
       ) : (
         <>
           {/* Stats Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <StatCard icon={<Tractor />} value={String(stats.totalMachines)} label={t("totalMachines")} bg="bg-green-100" />
-            <StatCard icon={<Clock />} value={String(stats.pending)} label={t("pendingRequests")} bg="bg-yellow-100" />
-            <StatCard icon={<CheckCircle />} value={String(stats.approved)} label={t("approvedBookings")} bg="bg-green-100" />
-            <StatCard icon={<TrendingUp />} value={String(stats.active)} label={t("availableMachines")} bg="bg-yellow-100" />
+            <StatCard icon={<Tractor />} value={String(stats.totalMachines)} label={t("dashboard.totalMachines")} bg="bg-green-100" />
+            <StatCard icon={<Clock />} value={String(stats.pending)} label={t("dashboard.pendingRequests")} bg="bg-yellow-100" />
+            <StatCard icon={<CheckCircle />} value={String(stats.approved)} label={t("dashboard.approvedBookings")} bg="bg-green-100" />
+            <StatCard icon={<TrendingUp />} value={String(stats.active)} label={t("dashboard.availableMachines")} bg="bg-yellow-100" />
           </div>
 
           {/* Quick Actions */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <Link href="/admin/machines">
-              <ActionCard icon={<Tractor />} title={t("manageMachines")} desc={t("manageMachinesDesc")} />
+              <ActionCard icon={<Tractor />} title={t("machines.manageMachines")} desc={t("machines.manageMachinesDesc")} />
             </Link>
             <Link href="/admin/bookings">
-              <ActionCard icon={<ClipboardList />} title={t("bookingRequests")} desc={t("bookingRequestsDesc")} />
+              <ActionCard icon={<ClipboardList />} title={t("booking.requests")} desc={t("booking.requestsDesc")} />
             </Link>
             <Link href="/admin/calendar">
-              <ActionCard icon={<Calendar />} title={t("availabilityCalendar")} desc={t("availabilityCalendarDesc")} />
+              <ActionCard icon={<Calendar />} title={t("booking.calendar")} desc={t("booking.calendarDesc")} />
             </Link>
           </div>
 
           {/* Recent Bookings */}
           <div className="bg-white rounded-2xl shadow-sm border p-6">
-            <h3 className="text-xl font-semibold mb-6">{t("recentBookingReq")}</h3>
+            <h3 className="text-xl font-semibold mb-6">{t("dashboard.recentBookingReq")}</h3>
             {recentBookings.length === 0 ? (
-              <p className="text-gray-400 text-center py-8">{t("noBookings")}</p>
+              <p className="text-gray-400 text-center py-8">{t("dashboard.noBookings")}</p>
             ) : (
               recentBookings.map((b) => (
                 <BookingRow
                   key={b.id}
-                  name={b.profiles?.full_name ?? t("farmer")}
+                  name={b.profiles?.full_name ?? t("nav.farmer")}
                   machine={b.machines?.name ?? "—"}
                   status={b.status}
                   t={t}
@@ -136,15 +136,15 @@ function BookingRow({ name, machine, status, t, onApprove, onReject }: any) {
         <p className="text-sm text-gray-500">{machine}</p>
       </div>
       <div className="flex items-center gap-2">
-        <span className={`px-3 py-1 text-xs rounded-full ${statusColor}`}>{t(status.toLowerCase()) || status}</span>
+        <span className={`px-3 py-1 text-xs rounded-full ${statusColor}`}>{t(`status.${status.toLowerCase()}`) || status}</span>
         {onApprove && (
           <button onClick={onApprove} className="text-xs bg-green-600 text-white px-3 py-1 rounded-full hover:bg-green-700">
-            {t("approve")}
+            {t("common.approve")}
           </button>
         )}
         {onReject && (
           <button onClick={onReject} className="text-xs bg-red-500 text-white px-3 py-1 rounded-full hover:bg-red-600">
-            {t("reject")}
+            {t("common.reject")}
           </button>
         )}
       </div>

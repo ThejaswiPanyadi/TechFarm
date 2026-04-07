@@ -19,7 +19,8 @@ type AllStatus =
   | "Cancelled"
   | "Completed"
   | "Late Return"
-  | "Overdue";
+  | "Overdue"
+  | "Returned";
 
 const STATUS_COLORS: Record<string, string> = {
   "Pending Payment": "bg-amber-100 text-amber-700 border-amber-200",
@@ -29,6 +30,7 @@ const STATUS_COLORS: Record<string, string> = {
   Completed: "bg-teal-100 text-teal-700 border-teal-200",
   "Late Return": "bg-orange-100 text-orange-700 border-orange-200",
   Overdue: "bg-red-200 text-red-800 border-red-300",
+  Returned: "bg-teal-100 text-teal-700 border-teal-200",
   // Legacy
   Pending: "bg-yellow-100 text-yellow-700",
   Approved: "bg-green-100 text-green-700",
@@ -155,7 +157,7 @@ export default function BookingRequests() {
     }
   }
 
-  const filterTabs: AllStatus[] = ["All", "Pending Payment", "Waiting Admin Approval", "Confirmed", "Overdue", "Completed", "Late Return", "Cancelled"];
+  const filterTabs: AllStatus[] = ["All", "Pending Payment", "Waiting Admin Approval", "Confirmed", "Overdue", "Returned", "Completed", "Late Return", "Cancelled"];
 
   const filtered = filter === "All" ? bookings : bookings.filter((b) => b.status === filter);
 
@@ -173,11 +175,11 @@ export default function BookingRequests() {
 
     let displayString = "";
     if (isActive) {
-      displayString = `${Math.floor(hoursDiff)} hours remaining`;
+      displayString = `${Math.floor(hoursDiff)} ${t("booking.hoursRemaining")}`;
     } else if (isLate) {
       const days = Math.floor(hoursDiff / 24);
       const hrs = Math.floor(hoursDiff % 24);
-      displayString = `Late by ${days}d ${hrs}h`;
+      displayString = `${t("booking.lateBy")} ${days}d ${hrs}h`;
     }
 
     const livePenalty = isLate ? Math.ceil(Math.abs(msDiff) / (1000 * 60 * 60 * 24)) * (booking.machines?.price_per_day ?? 0) : 0;
@@ -187,8 +189,8 @@ export default function BookingRequests() {
 
   return (
     <AdminLayout>
-      <h1 className="text-2xl font-bold mb-1">{t("bookingRequests")}</h1>
-      <p className="text-gray-600 mb-6">Detailed booking tracking and return management.</p>
+      <h1 className="text-2xl font-bold mb-1">{t("nav.bookingRequests")}</h1>
+      <p className="text-gray-600 mb-6">{t("booking.adminTrackingDesc")}</p>
 
       {/* Filter Tabs */}
       <div className="flex gap-2 mb-6 flex-wrap">
@@ -200,7 +202,7 @@ export default function BookingRequests() {
               filter === tab ? "bg-green-700 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
-            {tab}
+            {tab === "All" ? t("common.all") : t(`status.${tab.toLowerCase().replace(/ /g, "")}`) || tab}
             {tab === "Pending Payment" && bookings.filter((b) => b.status === tab).length > 0 && (
               <span className="ml-1.5 bg-amber-500 text-white px-1.5 py-0.5 rounded-full text-xs">
                 {bookings.filter((b) => b.status === tab).length}
@@ -216,14 +218,19 @@ export default function BookingRequests() {
                 {bookings.filter((b) => b.status === tab).length}
               </span>
             )}
+            {tab === "Returned" && bookings.filter((b) => b.status === tab).length > 0 && (
+              <span className="ml-1.5 bg-teal-500 text-white px-1.5 py-0.5 rounded-full text-xs">
+                {bookings.filter((b) => b.status === tab).length}
+              </span>
+            )}
           </button>
         ))}
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-gray-400">Loading tracking data...</div>
+        <div className="text-center py-20 text-gray-400">{t("booking.loadingBookings")}</div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">No bookings match this filter.</div>
+        <div className="text-center py-20 text-gray-400">{t("booking.noBookingsFound")}</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((booking) => {
@@ -238,24 +245,24 @@ export default function BookingRequests() {
                 <div>
                   <div className="flex justify-between items-start mb-3">
                     <h2 className="font-bold text-lg text-gray-800 line-clamp-1">
-                      {booking.machines?.name ?? "Unknown Machine"}
+                      {booking.machines?.name ?? t("booking.unknown")}
                     </h2>
                     <span
                       className={`px-2.5 py-1 text-xs rounded-full font-bold border ${STATUS_COLORS[booking.status] ?? "bg-gray-100 text-gray-600 border-gray-200"}`}
                     >
-                      {booking.status}
+                      {t(`status.${booking.status.toLowerCase().replace(/ /g, "")}`) || booking.status}
                     </span>
                   </div>
 
                   <p className="text-sm text-gray-600 font-medium mb-1">
-                    👤 {booking.customer_name || booking.profiles?.full_name || "Unknown"}
+                    👤 {booking.customer_name || booking.profiles?.full_name || t("booking.unknown")}
                   </p>
-                  <p className="text-xs text-gray-500 mb-4">📍 {booking.customer_location || "Unknown Location"}</p>
+                  <p className="text-xs text-gray-500 mb-4">📍 {booking.customer_location || t("booking.unknown")}</p>
 
                   <div className="bg-gray-50 rounded-xl p-3 border border-gray-100 space-y-1.5">
                     <div className="flex items-center gap-2 text-xs text-gray-600">
                       <Calendar className="w-3.5 h-3.5" />
-                      <span>{booking.from_date} <span className="text-gray-400">to</span> {booking.to_date}</span>
+                      <span>{booking.from_date} <span className="text-gray-400">{t("common.to")}</span> {booking.to_date}</span>
                     </div>
 
                     {tracking && (tracking.isActive || tracking.isLate) && (
@@ -272,7 +279,7 @@ export default function BookingRequests() {
                     onClick={(e) => { e.stopPropagation(); setSelectedBooking(booking); }} 
                     className="flex-1 flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold py-2 rounded-xl transition"
                   >
-                    <Eye className="w-4 h-4" /> View Details
+                    <Eye className="w-4 h-4" /> {t("booking.viewDetails")}
                   </button>
                 </div>
               </div>
@@ -299,31 +306,31 @@ export default function BookingRequests() {
                   <span className="text-2xl">🚜</span>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedBooking.machines?.name ?? "Machine Rental"}</h2>
-                  <p className="text-sm text-gray-500">Booking ID: <span className="font-mono text-xs">{selectedBooking.id}</span></p>
+                  <h2 className="text-2xl font-bold text-gray-900">{selectedBooking.machines?.name ?? t("booking.details")}</h2>
+                  <p className="text-sm text-gray-500">{t("booking.bookingID")}: <span className="font-mono text-xs">{selectedBooking.id}</span></p>
                 </div>
               </div>
 
               <div className="flex flex-wrap gap-2 mb-8">
                 <span className={`px-3 py-1 text-sm font-bold border rounded-full ${STATUS_COLORS[selectedBooking.status] ?? "bg-gray-100 text-gray-600"}`}>
-                  {selectedBooking.status}
+                  {t(`status.${selectedBooking.status.toLowerCase().replace(/ /g, "")}`) || selectedBooking.status}
                 </span>
                 <span className={`px-3 py-1 text-sm font-bold border rounded-full ${PAYMENT_COLORS[selectedBooking.payment_method] ?? "bg-gray-100 text-gray-600"}`}>
-                  {selectedBooking.payment_method === "cash" ? "🏪 Cash" : "📱 Online Payment"}
+                  {selectedBooking.payment_method === "cash" ? `🏪 ${t("common.cash")}` : `📱 ${t("booking.onlinePayment")}`}
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 {/* Section: Customer Details */}
                 <div className="bg-gray-50 rounded-2xl p-5 border border-gray-200">
-                  <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Customer Details</h3>
+                  <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">{t("booking.customerDetails")}</h3>
                   <div className="space-y-3 text-sm">
-                    <p className="flex justify-between"><span className="text-gray-500">Name</span> <span className="font-medium">{selectedBooking.customer_name || selectedBooking.profiles?.full_name || "—"}</span></p>
-                    <p className="flex justify-between"><span className="text-gray-500">Phone</span> <span className="font-medium">{selectedBooking.customer_phone || "—"}</span></p>
-                    <p className="flex justify-between"><span className="text-gray-500">Village/Location</span> <span className="font-medium">{selectedBooking.customer_location || "—"}</span></p>
+                    <p className="flex justify-between"><span className="text-gray-500">{t("booking.name")}</span> <span className="font-medium">{selectedBooking.customer_name || selectedBooking.profiles?.full_name || "—"}</span></p>
+                    <p className="flex justify-between"><span className="text-gray-500">{t("booking.phone")}</span> <span className="font-medium">{selectedBooking.customer_phone || "—"}</span></p>
+                    <p className="flex justify-between"><span className="text-gray-500">{t("booking.village")}</span> <span className="font-medium">{selectedBooking.customer_location || "—"}</span></p>
                     {selectedBooking.notes && (
                       <div className="pt-2 border-t border-gray-200 mt-2">
-                        <span className="text-gray-500 block mb-1">Notes</span>
+                        <span className="text-gray-500 block mb-1">{t("booking.notes")}</span>
                         <p className="italic text-gray-700">{selectedBooking.notes}</p>
                       </div>
                     )}
@@ -332,26 +339,26 @@ export default function BookingRequests() {
 
                 {/* Section: Payment & Cost */}
                 <div className="bg-gray-50 rounded-2xl p-5 border border-gray-200">
-                  <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Payment Overview</h3>
+                  <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">{t("booking.paymentMethodTitle")}</h3>
                   <div className="space-y-3 text-sm">
-                    <p className="flex justify-between"><span className="text-gray-500">Daily Rate</span> <span className="font-medium">₹ {selectedBooking.machines?.price_per_day ?? 0}</span></p>
-                    <p className="flex justify-between"><span className="text-gray-500">Base Amount</span> <span className="font-medium text-green-700 font-bold">₹ {selectedBooking.total_amount ?? 0}</span></p>
+                    <p className="flex justify-between"><span className="text-gray-500">{t("booking.pricePerDay")}</span> <span className="font-medium">₹ {selectedBooking.machines?.price_per_day ?? 0}</span></p>
+                    <p className="flex justify-between"><span className="text-gray-500">{t("booking.total")}</span> <span className="font-medium text-green-700 font-bold">₹ {selectedBooking.total_amount ?? 0}</span></p>
                     
                     {selectedBooking.status === "Pending Payment" && selectedBooking.cash_deadline && (
                       <div className="bg-amber-100 text-amber-800 p-2 rounded text-xs mt-2 font-medium">
-                        Due: {new Date(selectedBooking.cash_deadline).toLocaleString()}
+                        {t("booking.cashPayDue")}: {new Date(selectedBooking.cash_deadline).toLocaleString()}
                       </div>
                     )}
                     
                     {(selectedBooking.status === "Late Return" || selectedBooking.late_fee > 0) && (
                       <div className="pt-2 border-t border-gray-200 mt-2 text-orange-700">
-                        <p className="flex justify-between font-bold"><span>Final Late Fee</span> <span>₹ {selectedBooking.late_fee}</span></p>
+                        <p className="flex justify-between font-bold"><span>{t("booking.finalLateFee")}</span> <span>₹ {selectedBooking.late_fee}</span></p>
                       </div>
                     )}
 
                     {getTrackingInfo(selectedBooking)?.isLate && selectedBooking.status === "Overdue" && (
                       <div className="pt-2 border-t border-gray-200 mt-2 text-red-600 animate-pulse">
-                        <p className="flex justify-between font-bold"><span>Live Penalty (Est.)</span> <span>₹ {getTrackingInfo(selectedBooking)?.livePenalty}</span></p>
+                        <p className="flex justify-between font-bold"><span>{t("booking.livePenalty")} (Est.)</span> <span>₹ {getTrackingInfo(selectedBooking)?.livePenalty}</span></p>
                       </div>
                     )}
                   </div>
@@ -361,25 +368,25 @@ export default function BookingRequests() {
               {/* Section: Timeline Information */}
               <div className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm mb-6">
                 <h3 className="text-sm font-bold text-gray-900 mb-5 uppercase tracking-wider flex items-center gap-2">
-                  <Clock className="w-4 h-4" /> Timeline Tracking
+                  <Clock className="w-4 h-4" /> {t("booking.timelineTracking")}
                 </h3>
                 
                 <div className="relative pl-6 border-l-2 border-gray-100 space-y-6">
                   <div className="relative">
                     <div className="absolute -left-[31px] bg-gray-200 border-4 border-white w-4 h-4 rounded-full"></div>
-                    <p className="text-xs text-gray-500 font-semibold mb-0.5">Booking Created</p>
+                    <p className="text-xs text-gray-500 font-semibold mb-0.5">{t("booking.bookingCreated")}</p>
                     <p className="text-sm font-medium">{new Date(selectedBooking.created_at).toLocaleString()}</p>
                   </div>
 
-                  <div className="relative">
+                   <div className="relative">
                     <div className="absolute -left-[31px] bg-blue-400 border-4 border-white w-4 h-4 rounded-full"></div>
-                    <p className="text-xs text-gray-500 font-semibold mb-0.5">Rental Start (Midnight)</p>
+                    <p className="text-xs text-gray-500 font-semibold mb-0.5">{t("booking.rentalStart")}</p>
                     <p className="text-sm font-medium">{new Date(selectedBooking.from_date).toLocaleDateString()}</p>
                   </div>
 
-                  <div className="relative">
+                   <div className="relative">
                     <div className="absolute -left-[31px] bg-orange-400 border-4 border-white w-4 h-4 rounded-full"></div>
-                    <p className="text-xs text-gray-500 font-semibold mb-0.5">Rental End (Deadline)</p>
+                    <p className="text-xs text-gray-500 font-semibold mb-0.5">{t("booking.rentalEnd")}</p>
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-medium">{new Date(selectedBooking.to_date).toLocaleDateString()} 23:59</p>
                       
@@ -400,8 +407,8 @@ export default function BookingRequests() {
                   {(selectedBooking.status === "Completed" || selectedBooking.status === "Late Return") && (
                     <div className="relative">
                       <div className={`absolute -left-[31px] border-4 border-white w-4 h-4 rounded-full ${selectedBooking.status === "Completed" ? "bg-green-500" : "bg-red-500"}`}></div>
-                      <p className="text-xs text-gray-500 font-semibold mb-0.5">Actual Return</p>
-                      <p className="text-sm font-medium">{selectedBooking.actual_return_date ? new Date(selectedBooking.actual_return_date).toLocaleString() : "Recorded"}</p>
+                      <p className="text-xs text-gray-500 font-semibold mb-0.5">{t("booking.actualReturn")}</p>
+                      <p className="text-sm font-medium">{selectedBooking.actual_return_date ? new Date(selectedBooking.actual_return_date).toLocaleString() : t("booking.recorded")}</p>
                     </div>
                   )}
                 </div>
@@ -409,20 +416,20 @@ export default function BookingRequests() {
 
               {/* Administrative Actions */}
               <div className="bg-gray-50 rounded-2xl p-5 border border-gray-200">
-                <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Admin Actions</h3>
+                <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">{t("booking.adminActions")}</h3>
                 
                 <div className="flex flex-wrap gap-3">
                   {selectedBooking.status === "Pending Payment" && (
                     <>
-                      <button disabled={actionLoading === selectedBooking.id + "cash"} onClick={() => handleCashPaid(selectedBooking.id)} className="bg-green-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow hover:bg-green-700 transition">Mark Cash Paid</button>
-                      <button disabled={actionLoading === selectedBooking.id + "Cancelled"} onClick={() => handleAction(selectedBooking.id, "Cancelled")} className="bg-red-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow hover:bg-red-600 transition">Cancel Booking</button>
+                      <button disabled={actionLoading === selectedBooking.id + "cash"} onClick={() => handleCashPaid(selectedBooking.id)} className="bg-green-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow hover:bg-green-700 transition">{t("booking.markCashPaid")}</button>
+                      <button disabled={actionLoading === selectedBooking.id + "Cancelled"} onClick={() => handleAction(selectedBooking.id, "Cancelled")} className="bg-red-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow hover:bg-red-600 transition">{t("booking.cancelBooking")}</button>
                     </>
                   )}
 
                   {(selectedBooking.status === "Waiting Admin Approval" || selectedBooking.status === "Pending") && (
                     <>
-                      <button disabled={actionLoading === selectedBooking.id + "Confirmed"} onClick={() => handleAction(selectedBooking.id, "Confirmed")} className="bg-green-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow hover:bg-green-700 transition">Approve Booking</button>
-                      <button disabled={actionLoading === selectedBooking.id + "Cancelled"} onClick={() => handleAction(selectedBooking.id, "Cancelled")} className="bg-red-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow hover:bg-red-600 transition">Reject Booking</button>
+                      <button disabled={actionLoading === selectedBooking.id + "Confirmed"} onClick={() => handleAction(selectedBooking.id, "Confirmed")} className="bg-green-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow hover:bg-green-700 transition">{t("booking.approveBooking")}</button>
+                      <button disabled={actionLoading === selectedBooking.id + "Cancelled"} onClick={() => handleAction(selectedBooking.id, "Cancelled")} className="bg-red-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow hover:bg-red-600 transition">{t("booking.rejectBooking")}</button>
                     </>
                   )}
 
@@ -430,18 +437,18 @@ export default function BookingRequests() {
                     <button 
                       disabled={actionLoading === selectedBooking.id + "return"} 
                       onClick={() => {
-                        if (confirm("Are you sure you want to mark this machine as returned? It will calculate late fees if overdue.")) {
+                        if (confirm(t("booking.confirmReturnPrompt"))) {
                           handleReturn(selectedBooking.id);
                         }
                       }} 
                       className="bg-teal-600 text-white px-6 py-3 w-full sm:w-auto rounded-xl text-sm font-bold shadow hover:bg-teal-700 transition flex items-center justify-center gap-2"
                     >
-                      <CheckCircle2 className="w-5 h-5" /> Execute Machine Return
+                      <CheckCircle2 className="w-5 h-5" /> {t("booking.executeReturn")}
                     </button>
                   )}
 
                   {(selectedBooking.status === "Completed" || selectedBooking.status === "Late Return" || selectedBooking.status === "Cancelled" || selectedBooking.status === "Rejected") && (
-                    <p className="text-sm text-gray-500 font-medium">No further actions required. Workflow finalized.</p>
+                    <p className="text-sm text-gray-500 font-medium">{t("booking.workflowFinalized")}</p>
                   )}
                 </div>
               </div>

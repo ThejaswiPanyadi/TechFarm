@@ -4,6 +4,8 @@ import { Calendar, MapPin, Phone, Clock, AlertTriangle } from "lucide-react";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { getFarmerBookings } from "@/lib/db";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
+import { SHOP_PHONE } from "@/lib/config";
 
 type Status =
   | "Pending"
@@ -16,9 +18,11 @@ type Status =
   | "Completed"
   | "Late Return"
   | "Overdue"
+  | "Returned"
   | "Late"; // Added for live calculation
 
 export default function MyBookings() {
+  const { t } = useLanguage();
   useAuthGuard("farmer");
   const { user } = useAuth();
   const [filter, setFilter] = useState<"All" | Status>("All");
@@ -38,6 +42,7 @@ export default function MyBookings() {
     "Late Return": "bg-orange-100 text-orange-700",
     Overdue: "bg-red-200 text-red-800",
     Late: "bg-red-100 text-red-800",
+    Returned: "bg-teal-100 text-teal-700",
   };
 
   useEffect(() => {
@@ -60,6 +65,7 @@ export default function MyBookings() {
     "Waiting Admin Approval",
     "Confirmed",
     "Overdue",
+    "Returned",
     "Completed",
     "Late Return",
     "Cancelled",
@@ -72,9 +78,9 @@ export default function MyBookings() {
     <FarmerLayout>
       <div className="space-y-8">
         <div>
-          <h2 className="text-3xl font-bold">My Bookings</h2>
+          <h2 className="text-3xl font-bold">{t("booking.myBookingsTitle")}</h2>
           <p className="text-gray-600 mt-2">
-            Track all your machine rental requests and their status.
+            {t("booking.myBookingsSubtitle")}
           </p>
         </div>
 
@@ -90,15 +96,15 @@ export default function MyBookings() {
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
-              {btn}
+              {btn === "All" ? t("common.all") : (t(`status.${btn.toLowerCase().replace(" ", "")}`) || btn)}
             </button>
           ))}
         </div>
 
         {loading ? (
-          <div className="text-center py-20 text-gray-400">Loading bookings...</div>
+          <div className="text-center py-20 text-gray-400">{t("booking.loadingBookings")}</div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 text-gray-400">No bookings found.</div>
+          <div className="text-center py-20 text-gray-400">{t("booking.noBookingsFound")}</div>
         ) : (
           <div className="space-y-5">
             {filtered.map((booking) => {
@@ -138,7 +144,7 @@ export default function MyBookings() {
                   {isWarning && (
                     <div className="absolute top-0 left-0 w-full bg-orange-500 text-white text-xs font-bold text-center py-1.5 px-4 shadow flex justify-center items-center gap-2 z-10">
                       <Clock className="w-3 h-3" />
-                      Your rental duration will end in under 2 hours. Please return the machine to avoid penalty.
+                      {t("booking.returnReminderUnder2Hrs")}
                     </div>
                   )}
 
@@ -152,7 +158,7 @@ export default function MyBookings() {
                           STATUS_STYLE[displayStatus] ?? "bg-gray-100 text-gray-600"
                         }`}
                       >
-                        {displayStatus}
+                        {displayStatus === "Late" ? t("booking.liveStatusLate") : (t(`status.${displayStatus.toLowerCase().replace(" ", "")}`) || displayStatus)}
                       </span>
                       {booking.payment_method && (
                         <span
@@ -162,7 +168,7 @@ export default function MyBookings() {
                               : "bg-purple-100 text-purple-700"
                           }`}
                         >
-                          {booking.payment_method === "cash" ? "🏪 Cash" : "📱 Online"}
+                          {booking.payment_method === "cash" ? `🏪 ${t("common.cash")}` : `📱 ${t("common.online")}`}
                         </span>
                       )}
                     </div>
@@ -189,7 +195,7 @@ export default function MyBookings() {
                     {/* ── Status-specific messages ── */}
                     {booking.status === "Pending Payment" && booking.cash_deadline && (
                       <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-                        ⏱ Please pay cash at the shop by{" "}
+                        ⏱ {t("booking.payCashAtShopBy")}{" "}
                         <span className="font-semibold">
                           {new Date(booking.cash_deadline).toLocaleString()}
                         </span>
@@ -198,43 +204,45 @@ export default function MyBookings() {
 
                     {booking.status === "Waiting Admin Approval" && (
                       <div className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded-lg px-3 py-2">
-                        📋 Payment received. Waiting for admin to confirm your booking.
+                        📋 {t("booking.waitingAdminConfirm")}
                       </div>
                     )}
 
                     {!isLate && (booking.status === "Confirmed" || booking.status === "Approved") && (
                       <div className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
-                        ✅ Booking confirmed! Please enjoy your rental and return on time.
+                        ✅ {t("booking.bookingConfirmedEnjoy")}
                       </div>
                     )}
 
                     {/* Late realtime updates */}
-                    {isLate && (
+                    {(isLate || booking.status === "Overdue") && (
                       <div className="text-xs text-red-800 bg-red-50 border border-red-300 rounded-lg px-4 py-3 font-medium">
                         <div className="flex items-center gap-2 mb-1">
                           <AlertTriangle className="w-4 h-4" />
-                          <span className="font-bold text-sm">Action Required: Machine is Late</span>
+                          <span className="font-bold text-sm">
+                            {booking.status === "Overdue" ? t("notifications.overdue") : t("booking.actionRequiredLate")}
+                          </span>
                         </div>
-                        <p>Your booking has exceeded the return time. Please return it immediately.</p>
+                        <p>{booking.status === "Overdue" ? t("notifications.overdueMessage") : t("booking.exceededReturnTime")}</p>
                         <div className="mt-2 text-base font-bold flex justify-between bg-red-100 px-3 py-2 rounded">
-                          <span>Live Penalty:</span>
+                          <span>{t("booking.livePenalty")}:</span>
                           <span>₹ {livePenalty}</span>
                         </div>
                       </div>
                     )}
 
-                    {booking.status === "Completed" && (
+                    {(booking.status === "Completed" || booking.status === "Late Return" || booking.status === "Returned") && (
                       <div className="text-xs text-teal-700 bg-teal-50 border border-teal-200 rounded-lg px-3 py-2">
-                        ✅ Machine returned successfully. Thank you!
+                        ✅ {t("booking.machineReturnedSuccess")}
                       </div>
                     )}
 
                     {booking.status === "Late Return" && (
                       <div className="text-xs text-orange-800 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2">
-                        ⚠️ Machine was returned late.
+                        ⚠️ {t("booking.returnedLateWarning")}
                         {booking.late_fee > 0 && (
                           <span className="font-bold block mt-0.5">
-                            💸 Final Late Fee Paid/Due: ₹ {booking.late_fee}
+                            💸 {t("booking.finalLateFee")}: ₹ {booking.late_fee}
                           </span>
                         )}
                       </div>
@@ -242,17 +250,20 @@ export default function MyBookings() {
 
                     {booking.actual_return_date && (
                       <p className="text-xs text-gray-500">
-                        🔄 Returned on: {booking.actual_return_date}
+                        🔄 {t("booking.returnedOn")}: {booking.actual_return_date}
                       </p>
                     )}
                   </div>
 
-                  {(isTrackingLive || booking.status === "Late Return" || booking.status === "Completed") && (
+                  {(isTrackingLive || booking.status === "Late Return" || booking.status === "Completed" || booking.status === "Returned") && (
                     <div className="flex flex-col items-end gap-2 lg:min-w-[150px] pt-4 lg:pt-0">
-                      <button className="flex items-center justify-center gap-2 border border-green-700 text-green-700 px-4 py-2 w-full rounded-xl hover:bg-green-700 hover:text-white transition whitespace-nowrap">
+                      <a 
+                        href={`tel:${SHOP_PHONE}`}
+                        className="flex items-center justify-center gap-2 border border-green-700 text-green-700 px-4 py-2 w-full rounded-xl hover:bg-green-700 hover:text-white transition whitespace-nowrap"
+                      >
                         <Phone className="w-4 h-4" />
-                        Contact Shop
-                      </button>
+                        {t("booking.contactShop")}
+                      </a>
                     </div>
                   )}
                 </div>

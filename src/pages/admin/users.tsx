@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { supabase } from "@/lib/supabase";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface UserRow {
     id: string;
@@ -42,6 +43,7 @@ async function usersApi(method: string, body?: object) {
 
 export default function UserManagement() {
     useAuthGuard("admin");
+    const { t } = useLanguage();
 
     const [users, setUsers] = useState<UserRow[]>([]);
     const [loading, setLoading] = useState(true);
@@ -120,9 +122,9 @@ export default function UserManagement() {
             <div className="space-y-6">
                 {/* Header */}
                 <div>
-                    <h1 className="text-2xl font-bold">User Management</h1>
+                    <h1 className="text-2xl font-bold">{t("admin.userManagement.title")}</h1>
                     <p className="text-gray-500 mt-1">
-                        Manage registered users, block/unblock accounts, and review activity.
+                        {t("admin.userManagement.desc")}
                     </p>
                 </div>
 
@@ -136,10 +138,10 @@ export default function UserManagement() {
                 {/* Stats */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                     {[
-                        { label: "Total Users", value: stats.total, color: "bg-blue-50 text-blue-700" },
-                        { label: "Farmers", value: stats.farmers, color: "bg-green-50 text-green-700" },
-                        { label: "Admins", value: stats.admins, color: "bg-purple-50 text-purple-700" },
-                        { label: "Blocked", value: stats.blocked, color: "bg-red-50 text-red-700" },
+                        { label: t("admin.userManagement.totalUsers"), value: stats.total, color: "bg-blue-50 text-blue-700" },
+                        { label: t("admin.userManagement.farmers"), value: stats.farmers, color: "bg-green-50 text-green-700" },
+                        { label: t("admin.userManagement.admins"), value: stats.admins, color: "bg-purple-50 text-purple-700" },
+                        { label: t("admin.userManagement.blocked"), value: stats.blocked, color: "bg-red-50 text-red-700" },
                     ].map((s) => (
                         <div key={s.label} className={`rounded-xl p-4 border ${s.color} border-current/20`}>
                             <p className="text-2xl font-bold">{s.value}</p>
@@ -152,7 +154,7 @@ export default function UserManagement() {
                 <div className="flex flex-col sm:flex-row gap-3">
                     <input
                         type="text"
-                        placeholder="🔍  Search by name, email, phone, village..."
+                        placeholder={`🔍  ${t("admin.userManagement.searchPlaceholder")}`}
                         className="flex-1 border rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-600"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
@@ -168,7 +170,7 @@ export default function UserManagement() {
                                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                 }`}
                             >
-                                {r.charAt(0).toUpperCase() + r.slice(1)}
+                                {r === "all" ? t("common.all") : t(`nav.${r}`) || r}
                             </button>
                         ))}
                     </div>
@@ -183,7 +185,7 @@ export default function UserManagement() {
                                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                                 }`}
                             >
-                                {s.charAt(0).toUpperCase() + s.slice(1)}
+                                {s === "all" ? t("common.all") : t(`status.${s}`) || s}
                             </button>
                         ))}
                     </div>
@@ -191,16 +193,24 @@ export default function UserManagement() {
 
                 {/* Table */}
                 {loading ? (
-                    <div className="text-center py-20 text-gray-400">Loading users...</div>
+                    <div className="text-center py-20 text-gray-400">{t("admin.userManagement.loading")}</div>
                 ) : filtered.length === 0 ? (
-                    <div className="text-center py-20 text-gray-400">No users found.</div>
+                    <div className="text-center py-20 text-gray-400">{t("admin.userManagement.noUsers")}</div>
                 ) : (
                     <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead className="bg-gray-50 border-b">
                                     <tr>
-                                        {["User", "Contact", "Village", "Role", "Status", "Last Login", "Actions"].map((h) => (
+                                        {[
+                                            t("admin.userManagement.user"),
+                                            t("admin.userManagement.contact"),
+                                            t("admin.userManagement.village"),
+                                            t("admin.userManagement.role"),
+                                            t("admin.userManagement.status"),
+                                            t("admin.userManagement.lastLogin"),
+                                            t("admin.userManagement.actions")
+                                        ].map((h) => (
                                             <th key={h} className="text-left px-4 py-3 font-semibold text-gray-600 whitespace-nowrap">
                                                 {h}
                                             </th>
@@ -236,13 +246,13 @@ export default function UserManagement() {
                                                 {/* Role */}
                                                 <td className="px-4 py-3">
                                                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${ROLE_STYLE[user.role] ?? "bg-gray-100 text-gray-600"}`}>
-                                                        {user.role}
+                                                        {t(`nav.${user.role}`) || user.role}
                                                     </span>
                                                 </td>
                                                 {/* Status */}
                                                 <td className="px-4 py-3">
                                                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLE[user.status ?? "active"] ?? "bg-gray-100 text-gray-600"}`}>
-                                                        {user.status ?? "active"}
+                                                        {t(`status.${user.status ?? "active"}`) || user.status || "active"}
                                                     </span>
                                                 </td>
                                                 {/* Last Login */}
@@ -252,7 +262,7 @@ export default function UserManagement() {
                                                             day: "2-digit", month: "short", year: "numeric",
                                                             hour: "2-digit", minute: "2-digit",
                                                         })
-                                                        : "Never"}
+                                                        : t("admin.userManagement.never")}
                                                 </td>
                                                 {/* Actions */}
                                                 <td className="px-4 py-3">
@@ -262,7 +272,7 @@ export default function UserManagement() {
                                                             onClick={() => setViewUser(user)}
                                                             className="px-3 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 text-xs font-medium hover:bg-blue-100 transition"
                                                         >
-                                                            View
+                                                            {t("admin.userManagement.view")}
                                                         </button>
                                                         {/* Block / Unblock */}
                                                         {user.role !== "admin" && (
@@ -275,7 +285,7 @@ export default function UserManagement() {
                                                                         : "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
                                                                 }`}
                                                             >
-                                                                {isActing ? "..." : isBlocked ? "Unblock" : "Block"}
+                                                                {isActing ? "..." : isBlocked ? t("admin.userManagement.unblock") : t("admin.userManagement.block")}
                                                             </button>
                                                         )}
                                                         {/* Delete */}
@@ -288,13 +298,13 @@ export default function UserManagement() {
                                                                             onClick={() => handleDelete(user.id)}
                                                                             className="px-3 py-1 rounded-lg bg-red-600 text-white text-xs font-medium hover:bg-red-700 disabled:opacity-50 transition"
                                                                         >
-                                                                            {isActing ? "..." : "Confirm"}
+                                                                            {isActing ? "..." : t("admin.userManagement.confirm")}
                                                                         </button>
                                                                         <button
                                                                             onClick={() => setDeleteConfirm(null)}
                                                                             className="px-3 py-1 rounded-lg bg-gray-100 text-gray-600 text-xs hover:bg-gray-200 transition"
                                                                         >
-                                                                            Cancel
+                                                                            {t("admin.userManagement.cancel")}
                                                                         </button>
                                                                     </div>
                                                                 ) : (
@@ -303,7 +313,7 @@ export default function UserManagement() {
                                                                         onClick={() => setDeleteConfirm(user.id)}
                                                                         className="px-3 py-1 rounded-lg bg-red-50 text-red-700 border border-red-200 text-xs font-medium hover:bg-red-100 transition disabled:opacity-50"
                                                                     >
-                                                                        Delete
+                                                                        {t("admin.userManagement.delete")}
                                                                     </button>
                                                                 )}
                                                             </>
@@ -317,7 +327,7 @@ export default function UserManagement() {
                             </table>
                         </div>
                         <div className="px-4 py-3 border-t text-sm text-gray-500">
-                            Showing {filtered.length} of {users.length} users
+                            {t("admin.userManagement.showingUsers").replace("{filtered}", String(filtered.length)).replace("{total}", String(users.length))}
                         </div>
                     </div>
                 )}
@@ -334,7 +344,7 @@ export default function UserManagement() {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-lg font-bold">User Details</h2>
+                            <h2 className="text-lg font-bold">{t("admin.userManagement.userDetails")}</h2>
                             <button
                                 onClick={() => setViewUser(null)}
                                 className="text-gray-400 hover:text-gray-600 text-xl leading-none"
@@ -353,12 +363,12 @@ export default function UserManagement() {
                                 </div>
                             </div>
                             {[
-                                ["📞 Phone", viewUser.phone ?? "—"],
-                                ["📍 Village", viewUser.location ?? "—"],
-                                ["👤 Role", viewUser.role],
-                                ["🔒 Status", viewUser.status ?? "active"],
-                                ["📅 Joined", new Date(viewUser.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })],
-                                ["🕐 Last Login", viewUser.last_sign_in_at ? new Date(viewUser.last_sign_in_at).toLocaleString("en-IN") : "Never"],
+                                [`📞 ${t("admin.userManagement.contact")}`, viewUser.phone ?? "—"],
+                                [`📍 ${t("admin.userManagement.village")}`, viewUser.location ?? "—"],
+                                [`👤 ${t("admin.userManagement.role")}`, t(`nav.${viewUser.role}`) || viewUser.role],
+                                [`🔒 ${t("admin.userManagement.status")}`, t(`status.${viewUser.status ?? "active"}`) || viewUser.status || "active"],
+                                [`📅 ${t("admin.userManagement.joined")}`, new Date(viewUser.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" })],
+                                [`🕐 ${t("admin.userManagement.lastLogin")}`, viewUser.last_sign_in_at ? new Date(viewUser.last_sign_in_at).toLocaleString("en-IN") : t("admin.userManagement.never")],
                             ].map(([label, value]) => (
                                 <div key={label} className="flex justify-between py-2 border-b last:border-0">
                                     <span className="text-gray-500">{label}</span>
@@ -370,7 +380,7 @@ export default function UserManagement() {
                             onClick={() => setViewUser(null)}
                             className="mt-5 w-full bg-gray-100 text-gray-700 py-2 rounded-xl hover:bg-gray-200 transition text-sm font-medium"
                         >
-                            Close
+                            {t("admin.userManagement.close")}
                         </button>
                     </div>
                 </div>

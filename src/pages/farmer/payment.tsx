@@ -3,8 +3,10 @@ import { useState } from "react";
 import FarmerLayout from "@/components/layout/FarmerLayout";
 import Image from "next/image";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function PaymentPage() {
+  const { t } = useLanguage();
   useAuthGuard("farmer");
   const router = useRouter();
   const { machine, price } = router.query;
@@ -17,7 +19,7 @@ export default function PaymentPage() {
 
     // Simulate sending data to admin (frontend only)
     setTimeout(() => {
-      alert("Booking request sent to Admin for approval.");
+      alert(t("booking.bookingRequestSent"));
       router.push("/farmer/bookings");
     }, 1500);
   };
@@ -25,7 +27,7 @@ export default function PaymentPage() {
   return (
     <FarmerLayout>
       <div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-md space-y-6">
-        <h2 className="text-2xl font-bold">Payment Method</h2>
+        <h2 className="text-2xl font-bold">{t("booking.paymentMethodTitle")}</h2>
 
         <div>
           <p className="text-lg font-semibold">{machine}</p>
@@ -41,7 +43,7 @@ export default function PaymentPage() {
               : "border-gray-300"
               }`}
           >
-            💵 Cash on Shop
+            💵 {t("booking.cashOnShop")}
           </div>
 
           <div
@@ -51,14 +53,14 @@ export default function PaymentPage() {
               : "border-gray-300"
               }`}
           >
-            💳 Online Payment (Scan QR)
+            💳 {t("booking.onlinePaymentScan")}
           </div>
         </div>
 
         {/* QR Code Section */}
         {method === "online" && (
           <div className="text-center space-y-4">
-            <p className="font-medium">Scan this QR to pay</p>
+            <p className="font-medium">{t("booking.scanQr")}</p>
 
             <div className="flex justify-center">
               <Image
@@ -73,7 +75,7 @@ export default function PaymentPage() {
               onClick={() => setPaid(true)}
               className="bg-green-600 text-white px-6 py-2 rounded-lg"
             >
-              I Have Paid
+              {t("booking.confirmPaid")}
             </button>
           </div>
         )}
@@ -84,7 +86,7 @@ export default function PaymentPage() {
             onClick={handleConfirm}
             className="w-full bg-green-700 text-white py-3 rounded-xl font-semibold"
           >
-            Confirm Booking (Cash)
+            {t("booking.confirmBookingCash")}
           </button>
         )}
 
@@ -93,7 +95,7 @@ export default function PaymentPage() {
             onClick={handleConfirm}
             className="w-full bg-green-700 text-white py-3 rounded-xl font-semibold"
           >
-            Confirm Booking
+            {t("booking.confirmBooking")}
           </button>
         )}
       </div>

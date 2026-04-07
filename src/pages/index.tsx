@@ -33,16 +33,16 @@ export default function Home() {
           <div className="relative z-10 w-full px-4 sm:px-6 lg:px-16 pt-20 sm:pt-24 pb-12 sm:pb-16">
             <div className="w-full max-w-none sm:max-w-xl text-white">
               <span className="inline-block bg-green-200 text-green-900 px-4 py-1 rounded-full text-xs sm:text-sm mb-4">
-                {t("badge")}
+                {t("home.badge")}
               </span>
 
               <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold leading-tight">
-                {t("heroLine1")}{" "}
-                <span className="text-yellow-400">{t("heroLine2")}</span>
+                {t("home.heroLine1")}{" "}
+                <span className="text-yellow-400">{t("home.heroLine2")}</span>
               </h1>
 
               <p className="mt-4 text-sm sm:text-base leading-relaxed">
-                {t("heroDesc")}
+                {t("home.heroDesc")}
               </p>
 
               <div className="mt-6 flex flex-col sm:flex-row gap-4">
@@ -50,14 +50,14 @@ export default function Home() {
                   onClick={handleRentClick}
                   className="bg-yellow-400 text-black px-6 py-3 rounded-lg font-medium"
                 >
-                  🚜 {user ? t("rentBtn") : t("availableMachines")}
+                  🚜 {user ? t("home.rentBtn") : t("nav.availableMachines")}
                 </button>
 
                 <button
                   onClick={handleMarketClick}
                   className="border border-white px-6 py-3 rounded-lg"
                 >
-                  🌱 {t("browseBtn")}
+                  🌱 {t("home.browseBtn")}
                 </button>
               </div>
             </div>
@@ -67,11 +67,11 @@ export default function Home() {
         {/* SERVICES */}
         <section className="w-full px-4 sm:px-6 lg:px-16 py-16 bg-[#FBFAF7]">
           <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">
-            {t("servicesTitle")}
+            {t("home.servicesTitle")}
           </h2>
 
           <p className="text-center text-gray-600 mb-10 text-sm sm:text-base">
-            {t("servicesSubtitle")}
+            {t("home.servicesSubtitle")}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
@@ -85,18 +85,18 @@ export default function Home() {
 
               <div className="p-6">
                 <h3 className="text-xl font-semibold mb-2">
-                  🚜 {user ? t("servicesRent") : t("availableMachines")}
+                  🚜 {user ? t("home.servicesRent") : t("nav.availableMachines")}
                 </h3>
 
                 <p className="text-gray-600 mb-4 text-sm sm:text-base">
-                  {t("servicesRentDesc")}
+                  {t("home.servicesRentDesc")}
                 </p>
 
                 <button
                   onClick={handleRentClick}
                   className="text-green-700 font-medium"
                 >
-                  {t("learnMore")} →
+                  {t("home.learnMore")} →
                 </button>
               </div>
             </div>
@@ -111,18 +111,18 @@ export default function Home() {
 
               <div className="p-6">
                 <h3 className="text-xl font-semibold mb-2">
-                  🌱 {t("servicesMarket")}
+                  🌱 {t("home.servicesMarket")}
                 </h3>
 
                 <p className="text-gray-600 mb-4 text-sm sm:text-base">
-                  {t("servicesMarketDesc")}
+                  {t("home.servicesMarketDesc")}
                 </p>
 
                 <button
                   onClick={handleMarketClick}
                   className="text-green-700 font-medium"
                 >
-                  {t("learnMore")} →
+                  {t("home.learnMore")} →
                 </button>
               </div>
             </div>
