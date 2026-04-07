@@ -91,7 +91,12 @@ export default function LoginPage() {
     if (profile!.role === "admin") {
       router.push("/admin");
     } else {
-      router.push("/farmer");
+      const redirectUrl = router.query.redirect;
+      if (typeof redirectUrl === "string" && redirectUrl.startsWith("/")) {
+        router.push(redirectUrl);
+      } else {
+        router.push("/farmer");
+      }
     }
   }
 
@@ -137,7 +142,7 @@ export default function LoginPage() {
         {/* Success Message (post-registration) */}
         {justRegistered && (
           <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-3 mb-4">
-            ✅ Account created! Please check your email to confirm your account before logging in.
+            ✅ Successfully registered! Please log in to access your account.
           </div>
         )}
 
@@ -185,7 +190,7 @@ export default function LoginPage() {
         {role !== "admin" && (
           <p className="text-center text-sm text-gray-500 mt-6">
             {t("dontHaveAccount")}{" "}
-            <Link href="/register" className="text-green-700 font-medium hover:underline">
+            <Link href={`/register${router.query.redirect ? `?redirect=${router.query.redirect}` : ""}`} className="text-green-700 font-medium hover:underline">
               {t("signUp")}
             </Link>
           </p>

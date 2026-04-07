@@ -48,34 +48,35 @@ export default function RegisterPage() {
         //    created by the DB trigger when the user confirms their email.
         if (!data.session) {
             setLoading(false);
-            router.push("/login?registered=1");
+            const redirectParams = router.query.redirect ? `&redirect=${router.query.redirect}` : "";
+            router.push(`/login?registered=1${redirectParams}`);
             return;
         }
 
         // 3. Session exists (email confirmation disabled) — upsert profile to
         //    ensure role is set correctly (in case trigger used a default).
-        const { error: profileError } = await supabase
-            .from("profiles")
-            .upsert({
-                id: data.user.id,
-                role,
-                full_name: fullName,
-                phone: phone || null,
-                location: location || null,
-            });
+        if (data.session) {
+            const { error: profileError } = await supabase
+                .from("profiles")
+                .upsert({
+                    id: data.user.id,
+                    role,
+                    full_name: fullName,
+                    phone: phone || null,
+                    location: location || null,
+                });
 
-        if (profileError) {
-            console.error("Profile upsert error:", profileError.message);
-            // Don't block the user — the trigger should have already created
-            // the profile. Attempt to continue to the dashboard.
+            if (profileError) {
+                console.error("Profile upsert error:", profileError.message);
+            }
+            
+            // Sign them out so they must manually log in
+            await supabase.auth.signOut();
         }
 
-        // 4. Redirect to the correct dashboard
-        if (role === "admin") {
-            router.push("/admin");
-        } else {
-            router.push("/farmer");
-        }
+        setLoading(false);
+        const redirectParams = router.query.redirect ? `&redirect=${router.query.redirect}` : "";
+        router.push(`/login?registered=1${redirectParams}`);
     }
 
     return (
@@ -184,7 +185,7 @@ export default function RegisterPage() {
                 {/* Login Link */}
                 <p className="text-center text-sm text-gray-500 mt-6">
                     {t("alreadyHaveAccount")}{" "}
-                    <Link href="/login" className="text-green-700 font-medium hover:underline">
+                    <Link href={`/login${router.query.redirect ? `?redirect=${router.query.redirect}` : ""}`} className="text-green-700 font-medium hover:underline">
                         {t("login")}
                     </Link>
                 </p>

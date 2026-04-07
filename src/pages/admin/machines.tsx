@@ -34,8 +34,8 @@ export default function ManageMachines() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [debugLog, setDebugLog] = useState<string>("");
 
   const [newMachine, setNewMachine] = useState({
     name: "",
@@ -80,67 +80,49 @@ export default function ManageMachines() {
     });
   }
 
-  async function uploadImages(): Promise<string[]> {
-    if (previews.length === 0) return [];
-    setUploading(true);
-    const urls: string[] = [];
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      for (const { file } of previews) {
-        // 1. Get Signed URL from our API (bypasses RLS for upload)
-        const res = await fetch("/api/admin/get-upload-url", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.access_token ?? ""}`,
-          },
-          body: JSON.stringify({ fileName: file.name }),
-        });
-
-        const { signedUrl, path, error: urlError } = await res.json();
-        if (!res.ok) throw new Error(urlError || "Failed to get upload permission");
-
-        // 2. Upload directly to Supabase using the signed URL
-        const uploadRes = await fetch(signedUrl, {
-          method: "PUT",
-          body: file,
-          headers: { "Content-Type": file.type },
-        });
-
-        if (!uploadRes.ok) throw new Error("File upload failed via signed URL");
-
-        // 3. Construct the public URL for display
-        const { data } = supabase.storage.from("machine-images").getPublicUrl(path);
-        if (data?.publicUrl) urls.push(data.publicUrl);
-      }
-      return urls;
-    } finally {
-      setUploading(false);
+  async function handleAdd(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newMachine.name || !newMachine.price_per_day) {
+      setError("Please fill out all required fields.");
+      return;
     }
-  }
-
-  async function handleAdd() {
-    if (!newMachine.name || !newMachine.price_per_day) return;
     setSaving(true);
     setError(null);
+    setDebugLog("Starting base64 compilation...");
     try {
-      const imageUrls = await uploadImages();
+      // 1. Compile previews into base64 payload array
+      const previewsBase64 = [];
+      for (const { file } of previews) {
+        setDebugLog(prev => prev + ` | Processing ${file.name}...`);
+        const reader = new FileReader();
+        const base64Promise = new Promise<string>((resolve, reject) => {
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => reject(new Error("File reader failed"));
+          reader.readAsDataURL(file);
+        });
+        
+        const fileData = await base64Promise;
+        previewsBase64.push({ fileName: file.name, fileData, contentType: file.type });
+      }
 
+      setDebugLog(prev => prev + ` | POSTing to database with bypass bundle...`);
+
+      // 2. Submit ONE grand payload. Next.js machines.ts handles both File Uploads and the Postgres Insertion.
       const m = await adminFetch("POST", {
         ...newMachine,
         price_per_day: Number(newMachine.price_per_day),
-        image_url: imageUrls[0] || "", // Set primary image
-        images: imageUrls, // Store all images
+        previewsBase64 
       });
 
+      setDebugLog(prev => prev + ` | Success! Resetting form...`);
       setMachines([m, ...machines]);
       setShowForm(false);
       setNewMachine({ name: "", description: "", location: "", price_per_day: "", status: "Available" });
       setPreviews([]);
-    } catch (e: any) {
-      console.error("addMachine error:", e);
-      setError(e.message);
+      setDebugLog(""); // clear on success
+    } catch (err: any) {
+      console.error("addMachine error:", err);
+      setError(err.message || "Failed to add machine");
     } finally {
       setSaving(false);
     }
@@ -176,18 +158,24 @@ export default function ManageMachines() {
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3 mb-4">{error}</div>
       )}
+      
+      {debugLog && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 text-xs rounded-lg px-4 py-3 mb-4 break-words">
+          <strong>Debug Trace:</strong> {debugLog}
+        </div>
+      )}
 
       {/* Add Form */}
       {showForm && (
-        <div className="bg-white p-6 rounded-xl shadow mb-8">
+        <form onSubmit={handleAdd} className="bg-white p-6 rounded-xl shadow mb-8">
           <h3 className="font-semibold text-lg mb-4">{t("newMachine")}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-4">
-              <input type="text" placeholder={t("machineName") + " *"} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+              <input type="text" required placeholder={t("machineName") + " *"} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
                 value={newMachine.name} onChange={(e) => setNewMachine({ ...newMachine, name: e.target.value })} />
               <input type="text" placeholder={t("cropLocation")} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
                 value={newMachine.location} onChange={(e) => setNewMachine({ ...newMachine, location: e.target.value })} />
-              <input type="number" placeholder={t("pricePerDay") + " *"} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
+              <input type="number" required placeholder={t("pricePerDay") + " *"} className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none"
                 value={newMachine.price_per_day} onChange={(e) => setNewMachine({ ...newMachine, price_per_day: e.target.value })} />
               <select className="w-full border p-2 rounded-lg focus:ring-2 focus:ring-green-500 outline-none" value={newMachine.status}
                 onChange={(e) => setNewMachine({ ...newMachine, status: e.target.value })}>
@@ -202,7 +190,7 @@ export default function ManageMachines() {
                 {previews.map((p, i) => (
                   <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border bg-white group flex items-center justify-center">
                     <img src={p.previewUrl} className="max-w-full max-h-full object-contain" />
-                    <button onClick={() => removePreview(i)} className="absolute -top-1 -right-1 bg-red-500 text-white p-0.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition">
+                    <button type="button" onClick={() => removePreview(i)} className="absolute -top-1 -right-1 bg-red-500 text-white p-0.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition">
                       <X className="w-3 h-3" />
                     </button>
                   </div>
@@ -223,16 +211,16 @@ export default function ManageMachines() {
               value={newMachine.description} onChange={(e) => setNewMachine({ ...newMachine, description: e.target.value })} />
           </div>
           <div className="flex gap-3 mt-4">
-            <button onClick={handleAdd} disabled={saving || uploading}
+            <button type="submit" disabled={saving}
               className="bg-green-700 text-white px-6 py-2 rounded-lg hover:bg-green-800 disabled:opacity-60 flex items-center gap-2 transition shadow-sm">
-              {(saving || uploading) && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
-              {saving || uploading ? t("saving") : t("saveMachine")}
+              {saving && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+              {saving ? t("saving") : t("saveMachine")}
             </button>
-            <button onClick={() => setShowForm(false)} className="border px-6 py-2 rounded-lg hover:bg-gray-50 transition">
+            <button type="button" onClick={() => setShowForm(false)} className="border px-6 py-2 rounded-lg hover:bg-gray-50 transition">
               {t("cancel")}
             </button>
           </div>
-        </div>
+        </form>
       )}
 
       {/* Machine Grid */}

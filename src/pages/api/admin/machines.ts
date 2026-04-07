@@ -24,6 +24,14 @@ async function verifyAdmin(req: NextApiRequest): Promise<boolean> {
     return profile?.role === "admin";
 }
 
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '20mb',
+        },
+    },
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const isAdmin = await verifyAdmin(req);
     if (!isAdmin) {
@@ -40,13 +48,56 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (req.method === "POST") {
-        const { data, error } = await supabaseAdmin
-            .from("machines")
-            .insert(req.body)
-            .select()
-            .single();
-        if (error) return res.status(500).json({ error: error.message });
-        return res.status(201).json(data);
+        try {
+            const { previewsBase64, ...restBody } = req.body;
+            let uploadedUrls: string[] = [];
+
+            // Upload via service role to bypass policies completely
+            if (previewsBase64 && Array.isArray(previewsBase64)) {
+                for (const file of previewsBase64) {
+                    const { fileName, fileData, contentType } = file;
+                    if (!fileName || !fileData) continue;
+
+                    const safeName = fileName.replace(/\s+/g, "_");
+                    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}-${safeName}`;
+                    
+                    const base64Data = fileData.includes(',') ? fileData.split(',')[1] : fileData;
+                    const buffer = Buffer.from(base64Data, 'base64');
+
+                    const { error: storageError } = await supabaseAdmin.storage
+                        .from("machine-images")
+                        .upload(path, buffer, {
+                            contentType: contentType || "image/jpeg",
+                            upsert: false
+                        });
+
+                    if (storageError) {
+                        return res.status(500).json({ error: `Upload failed: ${storageError.message}` });
+                    }
+
+                    const { data: pubData } = supabaseAdmin.storage.from("machine-images").getPublicUrl(path);
+                    if (pubData?.publicUrl) uploadedUrls.push(pubData.publicUrl);
+                }
+            }
+
+            // Bind newly generated image URLs into the document body
+            const finalDoc = {
+                ...restBody,
+                image_url: uploadedUrls.length > 0 ? uploadedUrls[0] : "",
+                images: uploadedUrls
+            };
+
+            const { data, error } = await supabaseAdmin
+                .from("machines")
+                .insert(finalDoc)
+                .select()
+                .single();
+
+            if (error) return res.status(500).json({ error: error.message });
+            return res.status(201).json(data);
+        } catch (e: any) {
+            return res.status(500).json({ error: e.message || "Unknown server error" });
+        }
     }
 
     if (req.method === "PATCH") {

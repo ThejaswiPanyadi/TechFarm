@@ -3,9 +3,13 @@ import Layout from "@/components/layout/Layout";
 import BookingModal from "@/components/farmer/BookingModal";
 import { getMachines } from "@/lib/db";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/router";
 
 export default function Machines() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const router = useRouter();
   const [machines, setMachines] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMachine, setSelectedMachine] = useState<any>(null);
@@ -60,7 +64,13 @@ export default function Machines() {
                   </div>
                 ) : machine.status === "Available" ? (
                   <button
-                    onClick={() => setSelectedMachine(machine)}
+                    onClick={() => {
+                        if (!user) {
+                            router.push("/register?redirect=/machines");
+                        } else {
+                            setSelectedMachine(machine);
+                        }
+                    }}
                     className="mt-4 w-full py-2 rounded-lg font-medium bg-green-600 text-white hover:bg-green-700 transition">
                     {t("bookMachine")}
                   </button>

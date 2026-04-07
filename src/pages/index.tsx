@@ -9,15 +9,15 @@ export default function Home() {
   const { user } = useAuth();
 
   const handleRentClick = () => {
-    if (!user) {
-      router.push("/login");
-    } else {
-      router.push("/machines");
-    }
+    router.push("/machines");
   };
 
   const handleMarketClick = () => {
-    router.push("/marketplace");
+    if (!user) {
+      router.push("/register?redirect=/marketplace");
+    } else {
+      router.push("/marketplace");
+    }
   };
 
   return (

@@ -103,7 +103,7 @@ export default function Header() {
           </Link>
 
           <Link
-            href={session ? "/machines" : "/login"}
+            href="/machines"
             className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1.5 rounded-lg"
           >
             <Tractor className="w-4 h-4" />
@@ -111,7 +111,7 @@ export default function Header() {
           </Link>
 
           <Link
-            href="/marketplace"
+            href={session ? "/marketplace" : "/register?redirect=/marketplace"}
             className="flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1.5 rounded-lg">
             <Leaf className="w-4 h-4" />
             {t("cropsSeeds")}
@@ -258,7 +258,7 @@ export default function Header() {
               </Link>
 
               <Link
-                href={session ? "/machines" : "/login"}
+                href="/machines"
                 onClick={() => setOpen(false)}
                 className="block px-4 py-3 rounded-lg"
               >
@@ -266,7 +266,7 @@ export default function Header() {
               </Link>
 
               <Link
-                href="/marketplace"
+                href={session ? "/marketplace" : "/register?redirect=/marketplace"}
                 onClick={() => setOpen(false)}
                 className="block px-4 py-3 rounded-lg"
               >

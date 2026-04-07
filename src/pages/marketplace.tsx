@@ -3,15 +3,25 @@ import Layout from "@/components/layout/Layout";
 import Link from "next/link";
 import { getAllListings } from "@/lib/db";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/router";
 
 export default function Marketplace() {
   const { t } = useLanguage();
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [listings, setListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [locationInput, setLocationInput] = useState("");
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/register?redirect=/marketplace");
+    }
+  }, [user, authLoading, router]);
 
   useEffect(() => {
     loadListings();
@@ -33,6 +43,16 @@ export default function Marketplace() {
     e.preventDefault();
     setSearchTerm(searchInput);
     setLocationFilter(locationInput);
+  }
+
+  if (authLoading || !user) {
+    return (
+      <Layout>
+        <div className="flex flex-col items-center justify-center min-h-[50vh]">
+          <p className="text-xl text-gray-500 mb-4">Please login or register to access this feature.</p>
+        </div>
+      </Layout>
+    );
   }
 
   return (
